@@ -1,0 +1,80 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  TF_ROOT_DIR: '../terraform'
+  azureServiceConnection: 'your-service-connection-name'
+  terraformstoragerg: 'resorcegroup'
+  terraformstorageaccount: 'storageaccount'
+  container_name: 'container'
+  tfstatefile : 'tfstate'
+
+stages:
+- stage: Terraform
+  jobs:
+  - job: Terraform
+    steps:
+
+      - task: TerraformTaskV3@3
+        displayName: Terraform INIT
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: $(TF_ROOT_DIR)
+          backendServiceArm: $(azureServiceConnection)
+          backendAzureRmResourceGroupName: $(terraformstoragerg)
+          backendAzureRmStorageAccountName: $(terraformstorageaccount)
+          backendAzureRmContainerName: $(container_name)
+          backendAzureRmKey: $(tfstatefile)
+
+      - task: AzurePowerShell@5
+        displayName: Get Access Token
+        inputs:
+            azureSubscription: $(azureServiceConnection)
+            ScriptType: 'InlineScript'
+            azurePowerShellVersion: 'LatestVersion'
+            preferredAzurePowerShellVersion: '3.1.0'
+            Inline: |
+              $VerbosePreference = 'SilentlyContinue'
+              $DebugPreference = 'SilentlyContinue'
+              $ErrorActionPreference = 'Stop'
+              $requiredModules = 'Az'
+              foreach ($module in $requiredModules) {
+                  if (-not (Get-Module -ListAvailable -Name $module -ErrorAction Stop)) {
+                      Install-Module -Name $module -Repository PSGallery -Force -AllowClobber -ErrorAction Stop
+                  }
+                  else 
+                  {
+                      # Write-Output "Module $module already installed..." 
+                  }
+                  Import-Module $module -ErrorAction Stop
+                  $modulePath = (Get-Module -Name $module -ErrorAction Stop).ModuleBase
+                  $env:PSModulePath = $env:PSModulePath + ":$modulePath"
+              }
+              $access_token = (Get-AzAccessToken -ResourceUrl https://database.windows.net -ErrorAction Stop).Token
+              Write-Host "##vso[task.setvariable variable=TF_VAR_ACCESS_TOKEN]$access_token"
+
+      - task: TerraformTaskV3@3
+        displayName: Terraform PLAN
+        inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: $(TF_ROOT_DIR)
+            commandOptions: '-var-file=variables.tfvars -out planfile'
+            environmentServiceNameAzureRM: $(azureServiceConnection)
+            backendAzureRmResourceGroupName: $(terraformstoragerg)
+
+      - task: TerraformTaskV3@3
+        displayName: Terraform APPLY
+        inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: $(TF_ROOT_DIR)
+            commandOptions: "planfile"
+            environmentServiceNameAzureRM: $(azureServiceConnection)
+        env:
+            TF_VAR_ACCESS_TOKEN: $(TF_VAR_ACCESS_TOKEN)
+       
