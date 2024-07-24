@@ -86,7 +86,7 @@ resource "azurerm_role_assignment" "role_mssql_to_myfunctionapp" {
 
 
 locals{
-  query = "CREATE LOGIN [${data.azuread_group.dev_kps.display_name}] FROM EXTERNAL PROVIDER; ALTER ROLE db_owner ADD MEMBER [${data.azuread_group.dev_kps.display_name}];"
+  query = "CREATE LOGIN [${azurerm_linux_function_app.myfunctionapp.name}] FROM EXTERNAL PROVIDER; ALTER ROLE db_owner ADD MEMBER [${azurerm_linux_function_app.myfunctionapp.name}];"
 }
 
 module "launch_query" {
