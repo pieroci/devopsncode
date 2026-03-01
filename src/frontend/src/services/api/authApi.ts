@@ -23,7 +23,9 @@ export const authApi = {
    */
   async register(data: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.auth.register, data);
+      // Only send username, email, and password to the API (confirmPassword is client-side only)
+      const { username, email, password } = data;
+      const response = await apiClient.post(API_ENDPOINTS.auth.register, { username, email, password });
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || error.message || 'Registration failed');

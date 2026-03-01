@@ -198,10 +198,12 @@ describe('RegisterPage', () => {
       await user.click(screen.getByRole('button', { name: /sign up/i }));
       
       await waitFor(() => {
+        // Should be called with all fields including confirmPassword
         expect(authApi.register).toHaveBeenCalledWith({
           username: 'testuser',
           email: 'test@example.com',
           password: 'password123',
+          confirmPassword: 'password123',
         });
       });
     });

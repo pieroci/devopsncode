@@ -115,7 +115,12 @@ describe('Auth API', () => {
 
       const result = await authApi.register(registerData);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/register', registerData);
+      // API should only receive username, email, and password (confirmPassword is client-side only)
+      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/register', {
+        username: 'newuser',
+        email: 'newuser@example.com',
+        password: 'password123',
+      });
       expect(result).toEqual(mockResponse.data.data);
     });
 

@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@/components/common';
 import { useAuthStore } from '@/store/authStore';
@@ -96,6 +96,7 @@ export const RegisterPage: React.FC = () => {
         username,
         email,
         password,
+        confirmPassword, // Include confirmPassword even though API doesn't use it (type requirement)
       });
       
       setAuth(response);
