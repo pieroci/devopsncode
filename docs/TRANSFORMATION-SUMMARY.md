@@ -7,7 +7,7 @@
 
 ---
 
-## ✅ Completed (Phases 1-2)
+## ✅ Completed (Phases 1-4)
 
 ### Phase 1: Foundation & Architecture ✅
 - [x] Complete folder structure for 10 microservices
@@ -45,27 +45,49 @@
 
 **Total**: ~1,800 lines of production code, 11 NuGet packages, all SOLID principles applied
 
+### Phase 3: Auth.Service (100% Complete) ✅
+- [x] User registration & login
+- [x] JWT authentication (access + refresh tokens)
+- [x] Token refresh flow with rotation
+- [x] Token revocation
+- [x] BCrypt password hashing (12 rounds)
+- [x] PostgreSQL + EF Core
+- [x] Redis caching
+- [x] FluentValidation
+- [x] Swagger/OpenAPI docs
+- [x] Health checks
+- [x] Docker multi-stage build
+- [x] Complete documentation
+
+**Files**: 10 files, ~700 lines
+
+### Phase 4: World.Service (100% Complete) ✅
+- [x] World CRUD operations
+- [x] Capacity management (1000 users/world default, configurable to 10,000)
+- [x] World selection logic
+- [x] Player count tracking (increment/decrement)
+- [x] World statistics (games, peak players)
+- [x] Redis caching per world
+- [x] Kubernetes namespace per world
+- [x] Geographic regions support
+- [x] 3 seed worlds (Alpha, Beta, Gamma)
+- [x] PostgreSQL + EF Core
+- [x] FluentValidation
+- [x] Swagger/OpenAPI docs
+- [x] Health checks
+- [x] Docker multi-stage build
+- [x] Complete documentation
+
+**Files**: 10 files, ~800 lines
+
 ---
 
-## 📋 Remaining Work (Phases 3-22)
+## 📋 Remaining Work (Phases 5-22)
 
 ### Critical Path (Must Have for MVP)
 
-#### Phase 3: Auth.Service (8-10 hours) 🔴 NEXT
-- User registration & login
-- JWT authentication
-- Refresh token flow
-- Password reset
-- Dockerfile & K8s manifests
-
-#### Phase 4: World.Service (6-8 hours) 🔴
-- World CRUD operations
-- Capacity management (1000 users/world)
-- World selection
-- Namespace per world
-- Redis per world
-
-#### Phase 5: Player.Service (6-8 hours) 🔴
+#### Phase 5: Player.Service (6-8 hours) 🔴 NEXT
+#### Phase 6: Game.Service (16-20 hours) 🔴
 - Player profile management
 - Player statistics
 - Redis caching
