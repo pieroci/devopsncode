@@ -148,27 +148,39 @@
 **Services**: EloService, MatchmakingService, MatchService, LeaderboardService
 **Controllers**: MatchmakingController (4 endpoints), MatchController (5 endpoints), LeaderboardController (4 endpoints)
 
+### Phase 9: Gateway.Service (100% Complete) ✅
+- [x] Ocelot API Gateway configuration
+- [x] Route mapping for all 6 microservices
+- [x] JWT Bearer authentication middleware
+- [x] Rate limiting per endpoint (AspNetCoreRateLimit)
+- [x] Circuit breaker pattern (Polly)
+- [x] QoS with timeout policies
+- [x] CORS configuration (AllowAll + SignalR)
+- [x] SignalR WebSocket routing support
+- [x] Health checks
+- [x] Serilog request/response logging
+- [x] Comprehensive README documentation
+
+**Files**: 6 files, ~845 lines
+**Routes**: 9 configured routes (59+ endpoints proxied)
+**Port**: 5000 (unified entry point)
+**Features**: JWT auth, rate limiting, circuit breaker, CORS
+
 ---
 
-## 📋 Remaining Work (Phases 9-22)
+## 📋 Remaining Work (Phases 10-22)
 
 ### Critical Path (Must Have for MVP)
 
-#### Phase 9: Gateway.Service (6-8 hours) 🔴 NEXT
-- Ocelot API Gateway
-- Routing to all services
-- Rate limiting
-- Auth middleware
-- CORS configuration
+#### Phase 10: Frontend (TypeScript/Phaser.js) (20-24 hours) 🔴 NEXT
+- Phaser.js 3 game engine
+- SignalR client integration
+- Mobile-optimized UI
+- Touch controls
+- Authentication flow
+- Game rendering
 
-#### Phase 10: Payment.Service (8-10 hours) 🟡
-- Ocelot API Gateway
-- Routing to all services
-- Rate limiting
-- Auth middleware
-- CORS configuration
-
-#### Phase 13: Frontend (TypeScript/Phaser.js) (20-24 hours) 🔴
+#### Phase 11: Payment.Service (8-10 hours) 🟡
 - Phaser.js 3 game engine
 - SignalR client
 - Mobile-optimized UI
