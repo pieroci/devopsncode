@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useGameStore } from './gameStore';
 import { roomsApi } from '@/services/api/roomsApi';
-import type { GameSession } from '@/types';
+import { GameHubService } from '@/services/signalR';
+import type { GameSession, GamePlayer } from '@/types';
 
 // Mock roomsApi
 vi.mock('@/services/api/roomsApi', () => ({
@@ -13,6 +14,31 @@ vi.mock('@/services/api/roomsApi', () => ({
     leaveRoom: vi.fn(),
     getRoomDetails: vi.fn(),
   },
+}));
+
+// Mock GameHubService
+const mockGameHubInstance = {
+  connect: vi.fn().mockResolvedValue(undefined),
+  disconnect: vi.fn().mockResolvedValue(undefined),
+  joinRoom: vi.fn().mockResolvedValue(undefined),
+  leaveRoom: vi.fn().mockResolvedValue(undefined),
+  sendPosition: vi.fn().mockResolvedValue(undefined),
+  setReady: vi.fn().mockResolvedValue(undefined),
+  onPlayerJoined: vi.fn(),
+  onPlayerLeft: vi.fn(),
+  onPlayerMoved: vi.fn(),
+  onPlayerReady: vi.fn(),
+  onGameStarting: vi.fn(),
+  onGameStarted: vi.fn(),
+  onGameEnded: vi.fn(),
+  offPlayerJoined: vi.fn(),
+  offPlayerLeft: vi.fn(),
+  offPlayerMoved: vi.fn(),
+  isConnected: vi.fn().mockReturnValue(true),
+};
+
+vi.mock('@/services/signalR', () => ({
+  GameHubService: vi.fn().mockImplementation(() => mockGameHubInstance),
 }));
 
 const mockRoom: GameSession = {
@@ -45,6 +71,15 @@ describe('gameStore', () => {
       result.current.reset();
     });
     vi.clearAllMocks();
+
+    // Reset mock functions
+    mockGameHubInstance.connect.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.disconnect.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.joinRoom.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.leaveRoom.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.sendPosition.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.setReady.mockClear().mockResolvedValue(undefined);
+    mockGameHubInstance.isConnected.mockReturnValue(true);
   });
 
   describe('Initial State', () => {
@@ -321,6 +356,399 @@ describe('gameStore', () => {
       expect(result.current.currentRoom).toBeNull();
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe('SignalR Integration', () => {
+    describe('Initial SignalR State', () => {
+      it('should have null gameHub initially', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        expect(result.current.gameHub).toBeNull();
+        expect(result.current.isConnected).toBe(false);
+        expect(result.current.players).toEqual([]);
+      });
+    });
+
+    describe('connectToGameHub', () => {
+      it('should create and connect to game hub successfully', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        expect(result.current.gameHub).not.toBeNull();
+        expect(result.current.isConnected).toBe(true);
+        expect(result.current.error).toBeNull();
+      });
+
+      it('should handle connection error', async () => {
+        const errorMessage = 'Connection failed';
+        mockGameHubInstance.connect.mockRejectedValue(new Error(errorMessage));
+
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        expect(result.current.error).toBe(errorMessage);
+        expect(result.current.isConnected).toBe(false);
+      });
+
+      it('should not reconnect if already connected', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Connect first time
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        const firstHub = result.current.gameHub;
+
+        // Try to connect again
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        // Should be the same instance
+        expect(result.current.gameHub).toBe(firstHub);
+      });
+    });
+
+    describe('disconnectFromGameHub', () => {
+      it('should disconnect from game hub successfully', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Connect first
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        expect(result.current.isConnected).toBe(true);
+
+        // Disconnect
+        await act(async () => {
+          await result.current.disconnectFromGameHub();
+        });
+
+        expect(result.current.isConnected).toBe(false);
+        expect(result.current.gameHub).toBeNull();
+        expect(result.current.players).toEqual([]);
+      });
+
+      it('should handle disconnection errors', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Connect first
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        const errorMessage = 'Disconnect failed';
+        mockGameHubInstance.disconnect.mockRejectedValue(new Error(errorMessage));
+
+        await act(async () => {
+          await result.current.disconnectFromGameHub();
+        });
+
+        expect(result.current.error).toBe(errorMessage);
+      });
+
+      it('should do nothing if not connected', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.disconnectFromGameHub();
+        });
+
+        expect(result.current.gameHub).toBeNull();
+        expect(result.current.error).toBeNull();
+      });
+    });
+
+    describe('updatePlayerPosition', () => {
+      const mockPlayer: GamePlayer = {
+        playerId: 'player-1',
+        username: 'TestPlayer',
+        isReady: false,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        speed: 0,
+        lap: 0,
+        position: 1,
+      };
+
+      it('should update existing player position', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Add player first
+        act(() => {
+          result.current.addPlayer(mockPlayer);
+        });
+
+        // Update position
+        act(() => {
+          result.current.updatePlayerPosition('player-1', 100, 200, 45);
+        });
+
+        const updatedPlayer = result.current.players.find(
+          (p) => p.playerId === 'player-1'
+        );
+        expect(updatedPlayer?.x).toBe(100);
+        expect(updatedPlayer?.y).toBe(200);
+        expect(updatedPlayer?.rotation).toBe(45);
+      });
+
+      it('should not error if player does not exist', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        act(() => {
+          result.current.updatePlayerPosition('non-existent', 100, 200, 45);
+        });
+
+        expect(result.current.players).toEqual([]);
+      });
+    });
+
+    describe('sendPosition', () => {
+      it('should send position update through game hub', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Connect first
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        await act(async () => {
+          await result.current.sendPosition(100, 200, 45);
+        });
+
+        expect(result.current.gameHub?.sendPosition).toHaveBeenCalledWith(100, 200, 45);
+      });
+
+      it('should handle error if not connected', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.sendPosition(100, 200, 45);
+        });
+
+        expect(result.current.error).toBe('Not connected to game hub');
+      });
+
+      it('should handle send position errors', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        const errorMessage = 'Failed to send position';
+        mockGameHubInstance.sendPosition.mockRejectedValue(new Error(errorMessage));
+
+        await act(async () => {
+          await result.current.sendPosition(100, 200, 45);
+        });
+
+        expect(result.current.error).toBe(errorMessage);
+      });
+    });
+
+    describe('setLocalPlayerReady', () => {
+      it('should set local player ready status', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.connectToGameHub();
+        });
+
+        await act(async () => {
+          await result.current.setLocalPlayerReady(true);
+        });
+
+        expect(result.current.gameHub?.setReady).toHaveBeenCalledWith(true);
+      });
+
+      it('should handle error if not connected', async () => {
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.setLocalPlayerReady(true);
+        });
+
+        expect(result.current.error).toBe('Not connected to game hub');
+      });
+    });
+
+    describe('updatePlayerReady', () => {
+      const mockPlayer: GamePlayer = {
+        playerId: 'player-1',
+        username: 'TestPlayer',
+        isReady: false,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        speed: 0,
+        lap: 0,
+        position: 1,
+      };
+
+      it('should update player ready status', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Add player first
+        act(() => {
+          result.current.addPlayer(mockPlayer);
+        });
+
+        // Update ready status
+        act(() => {
+          result.current.updatePlayerReady('player-1', true);
+        });
+
+        const updatedPlayer = result.current.players.find(
+          (p) => p.playerId === 'player-1'
+        );
+        expect(updatedPlayer?.isReady).toBe(true);
+      });
+    });
+
+    describe('addPlayer', () => {
+      const mockPlayer: GamePlayer = {
+        playerId: 'player-1',
+        username: 'TestPlayer',
+        isReady: false,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        speed: 0,
+        lap: 0,
+        position: 1,
+      };
+
+      it('should add a new player', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        act(() => {
+          result.current.addPlayer(mockPlayer);
+        });
+
+        expect(result.current.players).toHaveLength(1);
+        expect(result.current.players[0]).toEqual(mockPlayer);
+      });
+
+      it('should not add duplicate player', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        act(() => {
+          result.current.addPlayer(mockPlayer);
+          result.current.addPlayer(mockPlayer);
+        });
+
+        expect(result.current.players).toHaveLength(1);
+      });
+    });
+
+    describe('removePlayer', () => {
+      const mockPlayer: GamePlayer = {
+        playerId: 'player-1',
+        username: 'TestPlayer',
+        isReady: false,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        speed: 0,
+        lap: 0,
+        position: 1,
+      };
+
+      it('should remove a player', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        // Add player first
+        act(() => {
+          result.current.addPlayer(mockPlayer);
+        });
+
+        expect(result.current.players).toHaveLength(1);
+
+        // Remove player
+        act(() => {
+          result.current.removePlayer('player-1');
+        });
+
+        expect(result.current.players).toHaveLength(0);
+      });
+
+      it('should not error when removing non-existent player', () => {
+        const { result } = renderHook(() => useGameStore());
+
+        act(() => {
+          result.current.removePlayer('non-existent');
+        });
+
+        expect(result.current.players).toEqual([]);
+      });
+    });
+
+    describe('Integrated join/leave with SignalR', () => {
+      it('should connect to hub when joining room', async () => {
+        const roomId = '123';
+        vi.mocked(roomsApi.joinRoom).mockResolvedValue(mockRoom);
+
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.joinRoomWithHub(roomId);
+        });
+
+        expect(result.current.currentRoom).toEqual(mockRoom);
+        expect(result.current.isConnected).toBe(true);
+        expect(result.current.gameHub).not.toBeNull();
+      });
+
+      it('should disconnect from hub when leaving room', async () => {
+        const roomId = '123';
+        vi.mocked(roomsApi.joinRoom).mockResolvedValue(mockRoom);
+        vi.mocked(roomsApi.leaveRoom).mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useGameStore());
+
+        // Join first
+        await act(async () => {
+          await result.current.joinRoomWithHub(roomId);
+        });
+
+        expect(result.current.isConnected).toBe(true);
+
+        // Leave
+        await act(async () => {
+          await result.current.leaveRoomWithHub(roomId);
+        });
+
+        expect(result.current.currentRoom).toBeNull();
+        expect(result.current.isConnected).toBe(false);
+        expect(result.current.players).toEqual([]);
+      });
+
+      it('should handle error during hub join', async () => {
+        const roomId = '123';
+        vi.mocked(roomsApi.joinRoom).mockResolvedValue(mockRoom);
+
+        const errorMessage = 'Hub join failed';
+        mockGameHubInstance.joinRoom.mockRejectedValue(new Error(errorMessage));
+
+        const { result } = renderHook(() => useGameStore());
+
+        await act(async () => {
+          await result.current.joinRoomWithHub(roomId);
+        });
+
+        expect(result.current.error).toBe(errorMessage);
+      });
     });
   });
 });
