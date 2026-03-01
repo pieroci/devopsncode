@@ -1,9 +1,16 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import axios from 'axios';
 import { authApi } from './authApi';
 import type { LoginCredentials, RegisterData } from '@/types';
 
-vi.mock('axios');
+// Mock the apiClient
+vi.mock('@/services/apiClient', () => ({
+  apiClient: {
+    post: vi.fn(),
+    get: vi.fn(),
+  },
+}));
+
+import { apiClient } from '@/services/apiClient';
 
 describe('Auth API', () => {
   beforeEach(() => {
@@ -38,11 +45,11 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
       const result = await authApi.login(credentials);
 
-      expect(axios.post).toHaveBeenCalledWith('/api/auth/login', credentials);
+      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/login', credentials);
       expect(result).toEqual(mockResponse.data.data);
     });
 
@@ -61,7 +68,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockRejectedValue(mockError);
+      vi.mocked(apiClient.post).mockRejectedValue(mockError);
 
       await expect(authApi.login(credentials)).rejects.toThrow('Invalid credentials');
     });
@@ -72,7 +79,7 @@ describe('Auth API', () => {
         password: 'password123',
       };
 
-      vi.mocked(axios.post).mockRejectedValue(new Error('Network error'));
+      vi.mocked(apiClient.post).mockRejectedValue(new Error('Network error'));
 
       await expect(authApi.login(credentials)).rejects.toThrow('Network error');
     });
@@ -104,11 +111,11 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
       const result = await authApi.register(registerData);
 
-      expect(axios.post).toHaveBeenCalledWith('/api/auth/register', registerData);
+      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/register', registerData);
       expect(result).toEqual(mockResponse.data.data);
     });
 
@@ -129,7 +136,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockRejectedValue(mockError);
+      vi.mocked(apiClient.post).mockRejectedValue(mockError);
 
       await expect(authApi.register(registerData)).rejects.toThrow('Validation failed');
     });
@@ -151,7 +158,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockRejectedValue(mockError);
+      vi.mocked(apiClient.post).mockRejectedValue(mockError);
 
       await expect(authApi.register(registerData)).rejects.toThrow('Email already exists');
     });
@@ -172,11 +179,11 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
       const result = await authApi.refreshToken(refreshToken);
 
-      expect(axios.post).toHaveBeenCalledWith('/api/auth/refresh', { refreshToken });
+      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/refresh', { refreshToken });
       expect(result).toEqual(mockResponse.data.data);
     });
 
@@ -192,7 +199,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockRejectedValue(mockError);
+      vi.mocked(apiClient.post).mockRejectedValue(mockError);
 
       await expect(authApi.refreshToken(refreshToken)).rejects.toThrow('Invalid refresh token');
     });
@@ -207,15 +214,15 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
       await authApi.logout();
 
-      expect(axios.post).toHaveBeenCalledWith('/api/auth/logout');
+      expect(apiClient.post).toHaveBeenCalledWith('/api/auth/logout');
     });
 
     it('should handle logout errors gracefully', async () => {
-      vi.mocked(axios.post).mockRejectedValue(new Error('Logout failed'));
+      vi.mocked(apiClient.post).mockRejectedValue(new Error('Logout failed'));
 
       // Logout should not throw, just log the error
       await expect(authApi.logout()).resolves.toBeUndefined();
@@ -236,11 +243,11 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.get).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
 
       const result = await authApi.getCurrentUser();
 
-      expect(axios.get).toHaveBeenCalledWith('/api/auth/me');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/auth/me');
       expect(result).toEqual(mockResponse.data.data);
     });
 
@@ -255,7 +262,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.get).mockRejectedValue(mockError);
+      vi.mocked(apiClient.get).mockRejectedValue(mockError);
 
       await expect(authApi.getCurrentUser()).rejects.toThrow('Unauthorized');
     });
@@ -271,7 +278,7 @@ describe('Auth API', () => {
         },
       };
 
-      vi.mocked(axios.post).mockRejectedValue(mockError);
+      vi.mocked(apiClient.post).mockRejectedValue(mockError);
 
       await expect(authApi.login({ email: 'test@test.com', password: 'test' }))
         .rejects.toThrow('Custom error message');
@@ -281,14 +288,14 @@ describe('Auth API', () => {
       const networkError = new Error('Network Error');
       (networkError as any).request = {};
 
-      vi.mocked(axios.post).mockRejectedValue(networkError);
+      vi.mocked(apiClient.post).mockRejectedValue(networkError);
 
       await expect(authApi.login({ email: 'test@test.com', password: 'test' }))
         .rejects.toThrow('Network Error');
     });
 
     it('should handle unknown errors', async () => {
-      vi.mocked(axios.post).mockRejectedValue(new Error('Unknown error'));
+      vi.mocked(apiClient.post).mockRejectedValue(new Error('Unknown error'));
 
       await expect(authApi.login({ email: 'test@test.com', password: 'test' }))
         .rejects.toThrow('Unknown error');
