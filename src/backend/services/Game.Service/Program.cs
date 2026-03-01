@@ -1,4 +1,5 @@
 using GamePlatform.Game.Service.Data;
+using GamePlatform.Game.Service.Services;
 using GamePlatform.Infrastructure.Redis;
 using GamePlatform.Security.JWT;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,6 +72,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+// Application Services
+builder.Services.AddScoped<IEventLogger, EventLogger>();
+builder.Services.AddScoped<ISessionManager, SessionManager>();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
