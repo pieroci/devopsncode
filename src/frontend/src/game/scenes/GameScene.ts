@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GamePlayer } from '@/types';
 import { GAME_CONFIG } from '../config/gameConfig';
+import { TouchControlsManager } from '../TouchControlsManager';
 
 export interface GameSceneData {
   sendPosition?: (x: number, y: number, rotation: number) => Promise<void>;
@@ -18,6 +19,7 @@ export class GameScene extends Phaser.Scene {
     S: Phaser.Input.Keyboard.Key;
     D: Phaser.Input.Keyboard.Key;
   };
+  private touchControls?: TouchControlsManager;
   private sceneData?: GameSceneData;
   private lastPositionUpdate: number = 0;
   private playerLabels: Map<string, Phaser.GameObjects.Text> = new Map();
@@ -54,7 +56,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Add UI text
-    this.add.text(16, 16, 'Use WASD or Arrows to move', {
+    const controlsText = TouchControlsManager.isTouchDevice()
+      ? 'Use on-screen joystick or WASD/Arrows to move'
+      : 'Use WASD or Arrows to move';
+    
+    this.add.text(16, 16, controlsText, {
       fontSize: '16px',
       color: '#ffffff',
       backgroundColor: '#000000',
@@ -63,7 +69,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number): void {
-    if (!this.localPlayer || !this.cursors || !this.wasd) {
+    if (!this.localPlayer) {
       return;
     }
 
@@ -125,10 +131,21 @@ export class GameScene extends Phaser.Scene {
         D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       };
     }
+
+    // Touch controls (only on touch devices)
+    if (TouchControlsManager.isTouchDevice()) {
+      this.touchControls = new TouchControlsManager({
+        scene: this,
+        joystickRadius: 60,
+        joystickX: 100,
+        joystickY: this.cameras.main.height - 100,
+        deadZone: 0.15,
+      });
+    }
   }
 
   private handlePlayerMovement(): void {
-    if (!this.localPlayer || !this.cursors || !this.wasd) {
+    if (!this.localPlayer) {
       return;
     }
 
@@ -136,21 +153,32 @@ export class GameScene extends Phaser.Scene {
     let velocityX = 0;
     let velocityY = 0;
 
-    // Check input (both arrow keys and WASD)
-    if (this.cursors.left.isDown || this.wasd.A.isDown) {
-      velocityX = -speed;
-    } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
-      velocityX = speed;
+    // Check keyboard input (both arrow keys and WASD)
+    if (this.cursors && this.wasd) {
+      if (this.cursors.left.isDown || this.wasd.A.isDown) {
+        velocityX = -speed;
+      } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
+        velocityX = speed;
+      }
+
+      if (this.cursors.up.isDown || this.wasd.W.isDown) {
+        velocityY = -speed;
+      } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
+        velocityY = speed;
+      }
     }
 
-    if (this.cursors.up.isDown || this.wasd.W.isDown) {
-      velocityY = -speed;
-    } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
-      velocityY = speed;
+    // Check touch controls (overrides keyboard if active)
+    if (this.touchControls) {
+      const joystickState = this.touchControls.getJoystickState();
+      if (joystickState.active && joystickState.force > 0) {
+        velocityX = joystickState.x * speed;
+        velocityY = joystickState.y * speed;
+      }
     }
 
-    // Normalize diagonal movement
-    if (velocityX !== 0 && velocityY !== 0) {
+    // Normalize diagonal movement (only for keyboard, touch is already normalized)
+    if (!this.touchControls?.isActive() && velocityX !== 0 && velocityY !== 0) {
       velocityX *= 0.707;
       velocityY *= 0.707;
     }
@@ -271,5 +299,24 @@ export class GameScene extends Phaser.Scene {
    */
   public getRemotePlayers(): Map<string, Phaser.Physics.Arcade.Sprite> {
     return this.remotePlayers;
+  }
+
+  /**
+   * Cleanup when scene is shutdown
+   */
+  shutdown(): void {
+    // Cleanup touch controls
+    if (this.touchControls) {
+      this.touchControls.destroy();
+      this.touchControls = undefined;
+    }
+
+    // Clear player labels
+    this.playerLabels.forEach((label) => label.destroy());
+    this.playerLabels.clear();
+
+    // Clear remote players
+    this.remotePlayers.forEach((sprite) => sprite.destroy());
+    this.remotePlayers.clear();
   }
 }

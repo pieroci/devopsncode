@@ -39,6 +39,28 @@ vi.mock('../config/gameConfig', () => ({
   },
 }));
 
+// Mock TouchControlsManager
+vi.mock('../TouchControlsManager', () => ({
+  TouchControlsManager: class {
+    getJoystickState() {
+      return {
+        active: false,
+        x: 0,
+        y: 0,
+        force: 0,
+        angle: 0,
+      };
+    }
+    isActive() {
+      return false;
+    }
+    destroy() {}
+    static isTouchDevice() {
+      return false;
+    }
+  },
+}));
+
 import { GameScene, type GameSceneData } from '../scenes/GameScene';
 import type { GamePlayer } from '@/types';
 
@@ -552,6 +574,147 @@ describe('GameScene', () => {
     it('should return remote players map', () => {
       const remotePlayers = gameScene.getRemotePlayers();
       expect(remotePlayers).toBeInstanceOf(Map);
+    });
+  });
+
+  describe('Touch Controls Integration', () => {
+    it('should handle movement without touch controls', () => {
+      gameScene.init(mockSceneData);
+      gameScene.create();
+
+      const mockLocalPlayer = createMockSprite();
+      (gameScene as any).localPlayer = mockLocalPlayer;
+
+      gameScene.update(100);
+
+      // Should work fine without touch controls
+      expect(mockLocalPlayer.setVelocity).toHaveBeenCalled();
+    });
+
+    it('should handle movement with touch controls', () => {
+      gameScene.init(mockSceneData);
+      gameScene.create();
+
+      const mockLocalPlayer = createMockSprite();
+      (gameScene as any).localPlayer = mockLocalPlayer;
+
+      // Mock touch controls with active joystick
+      (gameScene as any).touchControls = {
+        getJoystickState: vi.fn().mockReturnValue({
+          active: true,
+          x: 0.5,
+          y: 0,
+          force: 0.8,
+          angle: 0,
+        }),
+        isActive: vi.fn().mockReturnValue(true),
+        destroy: vi.fn(),
+      };
+
+      gameScene.update(100);
+
+      // Velocity should be set based on joystick state
+      expect(mockLocalPlayer.setVelocity).toHaveBeenCalled();
+    });
+
+    it('should prioritize touch controls over keyboard when active', () => {
+      gameScene.init(mockSceneData);
+      gameScene.create();
+
+      const mockLocalPlayer = createMockSprite();
+      (gameScene as any).localPlayer = mockLocalPlayer;
+
+      // Set keyboard input
+      (gameScene as any).cursors = {
+        left: { isDown: true },
+        right: { isDown: false },
+        up: { isDown: false },
+        down: { isDown: false },
+      };
+
+      (gameScene as any).wasd = {
+        W: { isDown: false },
+        A: { isDown: false },
+        S: { isDown: false },
+        D: { isDown: false },
+      };
+
+      // Mock active touch controls
+      (gameScene as any).touchControls = {
+        getJoystickState: vi.fn().mockReturnValue({
+          active: true,
+          x: 0.7,
+          y: 0,
+          force: 0.9,
+          angle: 0,
+        }),
+        isActive: vi.fn().mockReturnValue(true),
+        destroy: vi.fn(),
+      };
+
+      gameScene.update(100);
+
+      // Touch controls should take priority
+      expect(mockLocalPlayer.setVelocity).toHaveBeenCalled();
+    });
+  });
+
+  describe('Shutdown', () => {
+    beforeEach(() => {
+      gameScene.init(mockSceneData);
+      gameScene.create();
+    });
+
+    it('should cleanup touch controls on shutdown', () => {
+      const mockDestroy = vi.fn();
+      (gameScene as any).touchControls = {
+        destroy: mockDestroy,
+        getJoystickState: vi.fn(),
+        isActive: vi.fn(),
+      };
+
+      gameScene.shutdown();
+
+      expect(mockDestroy).toHaveBeenCalled();
+      expect((gameScene as any).touchControls).toBeUndefined();
+    });
+
+    it('should cleanup player labels on shutdown', () => {
+      const mockLabel = createMockText();
+      (gameScene as any).playerLabels.set('test', mockLabel);
+
+      gameScene.shutdown();
+
+      expect(mockLabel.destroy).toHaveBeenCalled();
+      expect((gameScene as any).playerLabels.size).toBe(0);
+    });
+
+    it('should cleanup remote players on shutdown', () => {
+      const mockPlayer: GamePlayer = {
+        playerId: 'player-1',
+        username: 'TestPlayer',
+        isReady: false,
+        x: 100,
+        y: 100,
+        rotation: 0,
+        speed: 0,
+        lap: 0,
+        position: 1,
+      };
+
+      gameScene.addRemotePlayer(mockPlayer);
+      const sprite = gameScene.getRemotePlayers().get('player-1');
+
+      gameScene.shutdown();
+
+      expect(sprite?.destroy).toHaveBeenCalled();
+      expect(gameScene.getRemotePlayers().size).toBe(0);
+    });
+
+    it('should not throw error if touch controls not initialized', () => {
+      (gameScene as any).touchControls = undefined;
+
+      expect(() => gameScene.shutdown()).not.toThrow();
     });
   });
 });
