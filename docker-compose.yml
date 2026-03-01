@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  game-server:
+    build: .
+    container_name: street-chaos-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./leaderboard.json:/app/leaderboard.json
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - game-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: street-chaos-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - game-server
+    restart: unless-stopped
+    networks:
+      - game-network
+
+networks:
+  game-network:
+    driver: bridge
+
+volumes:
+  game-data:
