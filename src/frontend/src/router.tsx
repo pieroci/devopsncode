@@ -1,33 +1,8 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { HomePage } from '@/pages/HomePage';
 import { useAuthStore } from '@/store/authStore';
-
-// Temporary home page component
-const HomePage = () => {
-  const { user, logout } = useAuthStore();
-  
-  return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>Welcome, {user?.username}!</h1>
-      <p>You are successfully logged in.</p>
-      <button 
-        onClick={logout}
-        style={{
-          padding: '0.75rem 1.5rem',
-          fontSize: '1rem',
-          backgroundColor: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-        }}
-      >
-        Logout
-      </button>
-    </div>
-  );
-};
 
 // Protected Route Component
 interface ProtectedRouteProps {
