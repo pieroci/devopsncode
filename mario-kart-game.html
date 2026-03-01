@@ -237,6 +237,11 @@
         
         // Race track definition (more challenging)
         function createTrack() {
+            // Clear existing arrays to prevent duplicates
+            trackWaypoints.length = 0;
+            obstacles.length = 0;
+            opponents.length = 0;
+            
             // Create a challenging figure-8 style track with narrow sections
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
