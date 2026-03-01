@@ -42,12 +42,16 @@ public static class RedisKeys
 {
     public const string PlayerPrefix = "player:";
     public const string WorldPrefix = "world:";
+    public const string WorldListPrefix = "world:list";
+    public const string WorldAvailableListPrefix = "world:available";
     public const string SessionPrefix = "session:";
     public const string LeaderboardPrefix = "leaderboard:";
     public const string MatchPrefix = "match:";
 
     public static string PlayerKey(Guid playerId) => $"{PlayerPrefix}{playerId}";
     public static string WorldKey(int worldId) => $"{WorldPrefix}{worldId}";
+    public static string WorldListKey() => WorldListPrefix;
+    public static string WorldAvailableListKey() => WorldAvailableListPrefix;
     public static string SessionKey(Guid sessionId) => $"{SessionPrefix}{sessionId}";
     public static string LeaderboardKey(int worldId) => $"{LeaderboardPrefix}{worldId}";
     public static string MatchKey(Guid matchId) => $"{MatchPrefix}{matchId}";

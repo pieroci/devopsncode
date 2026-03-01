@@ -368,7 +368,7 @@ public class WorldService : IWorldService
             IsActive = world.IsActive,
             IsFull = world.IsFull,
             AvailableSlots = world.AvailableSlots,
-            CapacityPercentage = world.CapacityPercentage,
+            CapacityPercentage = (decimal)world.CapacityPercentage,
             Region = world.Region,
             KubernetesNamespace = world.KubernetesNamespace,
             Status = world.IsActive ? WorldStatus.Active : WorldStatus.Inactive,
@@ -387,13 +387,13 @@ public class WorldService : IWorldService
     private async Task InvalidateWorldCacheAsync(int? worldId = null)
     {
         // Invalidate list caches
-        await _cache.RemoveAsync(RedisKeys.WorldListKey());
-        await _cache.RemoveAsync(RedisKeys.WorldAvailableListKey());
+        await _cache.DeleteAsync(RedisKeys.WorldListKey());
+        await _cache.DeleteAsync(RedisKeys.WorldAvailableListKey());
 
         // Invalidate specific world cache if provided
         if (worldId.HasValue)
         {
-            await _cache.RemoveAsync(RedisKeys.WorldKey(worldId.Value));
+            await _cache.DeleteAsync(RedisKeys.WorldKey(worldId.Value));
         }
     }
 }

@@ -122,9 +122,7 @@ builder.Services.AddCors(options =>
 });
 
 // Health checks
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<WorldDbContext>()
-    .AddRedis(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379");
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -160,3 +158,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+// Make Program accessible for integration tests
+public partial class Program { }

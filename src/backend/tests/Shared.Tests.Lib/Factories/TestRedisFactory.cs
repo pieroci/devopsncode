@@ -23,8 +23,8 @@ public static class TestRedisFactory
         mockCache.Setup(x => x.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>()))
             .Returns(Task.CompletedTask);
         
-        mockCache.Setup(x => x.RemoveAsync(It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+        mockCache.Setup(x => x.DeleteAsync(It.IsAny<string>()))
+            .ReturnsAsync(true);
         
         mockCache.Setup(x => x.ExistsAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
@@ -35,7 +35,7 @@ public static class TestRedisFactory
     /// <summary>
     /// Create a mock Redis cache service with specific cached values
     /// </summary>
-    public static Mock<IRedisCacheService> CreateMockRedisCacheServiceWithData<T>(string key, T value)
+    public static Mock<IRedisCacheService> CreateMockRedisCacheServiceWithData<T>(string key, T value) where T : class
     {
         var mockCache = CreateMockRedisCacheService();
         
