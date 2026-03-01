@@ -24,6 +24,10 @@ yarn-error.log*
 # Dependencies
 node_modules/
 bower_components/
+package-lock.json
+
+# Leaderboard data
+leaderboard.json
 
 # Build outputs
 dist/
