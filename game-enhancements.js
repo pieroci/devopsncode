@@ -132,11 +132,13 @@ class SoundManager {
 }
 
 // Weather System
+const WEATHER_CHANGE_INTERVAL = 120000; // 2 minutes
+
 class WeatherSystem {
     constructor() {
         this.currentWeather = 'clear';
         this.rainDrops = [];
-        this.changeInterval = 120000; // Change every 2 minutes
+        this.changeInterval = WEATHER_CHANGE_INTERVAL;
         this.lastChange = 0;
     }
     

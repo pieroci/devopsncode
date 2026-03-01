@@ -6,10 +6,73 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Simple rate limiting middleware
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 100; // max requests per window
+
+function rateLimit(req, res, next) {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    
+    if (!rateLimitMap.has(ip)) {
+        rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+        return next();
+    }
+    
+    const record = rateLimitMap.get(ip);
+    
+    if (now > record.resetTime) {
+        record.count = 1;
+        record.resetTime = now + RATE_LIMIT_WINDOW;
+        return next();
+    }
+    
+    if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+        return res.status(429).json({ error: 'Too many requests, please try again later' });
+    }
+    
+    record.count++;
+    next();
+}
+
+// Clean up rate limit map periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, record] of rateLimitMap.entries()) {
+        if (now > record.resetTime) {
+            rateLimitMap.delete(ip);
+        }
+    }
+}, RATE_LIMIT_WINDOW);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use('/api/', rateLimit); // Apply rate limiting to API routes
+
+// Serve only specific static files, not the entire directory
+app.use(express.static('public', {
+    index: false,
+    dotfiles: 'deny'
+}));
+
+// Serve specific game files explicitly
+app.get('/gta-style-game.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'gta-style-game.html'));
+});
+
+app.get('/mario-kart-game.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'mario-kart-game.html'));
+});
+
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'manifest.json'));
+});
+
+app.get('/service-worker.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'service-worker.js'));
+});
 
 // Leaderboard data file
 const LEADERBOARD_FILE = path.join(__dirname, 'leaderboard.json');

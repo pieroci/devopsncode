@@ -2,8 +2,7 @@
 const CACHE_NAME = 'street-chaos-v1';
 const urlsToCache = [
   '/gta-style-game.html',
-  '/manifest.json',
-  '/mario-kart-game.html'
+  '/manifest.json'
 ];
 
 // Install event - cache resources

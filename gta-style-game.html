@@ -1573,7 +1573,7 @@
             document.getElementById('finalTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             document.getElementById('finalKills').textContent = player.kills;
             document.getElementById('finalCars').textContent = player.carsStolen;
-            document.getElementById('finalWanted').textContent = Math.max(...[wantedLevel, 0]);
+            document.getElementById('finalWanted').textContent = Math.max(wantedLevel, 0);
             
             document.getElementById('gameOver').style.display = 'flex';
             
