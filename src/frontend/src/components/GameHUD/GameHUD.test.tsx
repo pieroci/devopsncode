@@ -88,7 +88,7 @@ describe('GameHUD', () => {
       renderWithRouter();
 
       expect(screen.getByTestId('room-info')).toBeInTheDocument();
-      expect(screen.getByText('Test Room')).toBeInTheDocument();
+      expect(screen.getByText('Room room-1')).toBeInTheDocument();
     });
 
     it('should render player list', () => {
@@ -130,10 +130,10 @@ describe('GameHUD', () => {
   });
 
   describe('Room Info', () => {
-    it('should display room name', () => {
+    it('should display room ID', () => {
       renderWithRouter();
 
-      expect(screen.getByText('Test Room')).toBeInTheDocument();
+      expect(screen.getByText('Room room-1')).toBeInTheDocument();
     });
 
     it('should display player count', () => {
