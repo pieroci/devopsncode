@@ -129,25 +129,39 @@
 **Hubs**: GameHub, NotificationHub
 **Controllers**: NotificationController (7 endpoints)
 
+### Phase 8: Match.Service (100% Complete) ✅
+- [x] ELO rating system with dynamic K-factor
+- [x] Matchmaking queue with Redis caching
+- [x] Fair team balancing algorithm
+- [x] Match lifecycle management (create/start/end)
+- [x] Automatic ELO calculation on match end
+- [x] Redis-cached leaderboards (5 min TTL)
+- [x] Match history with pagination
+- [x] Win/loss/draw tracking
+- [x] Rank tiers (Bronze to Master)
+- [x] PostgreSQL + EF Core
+- [x] Health checks
+- [x] Swagger/OpenAPI docs
+- [x] 13 REST API endpoints
+
+**Files**: 19 files, ~1,420 lines
+**Services**: EloService, MatchmakingService, MatchService, LeaderboardService
+**Controllers**: MatchmakingController (4 endpoints), MatchController (5 endpoints), LeaderboardController (4 endpoints)
+
 ---
 
-## 📋 Remaining Work (Phases 8-22)
+## 📋 Remaining Work (Phases 9-22)
 
 ### Critical Path (Must Have for MVP)
 
-#### Phase 7: Notification.Service (4-6 hours) 🔴 NEXT
-- Real-time notifications
-- SignalR hubs
-- Push notifications
-- Email notifications
+#### Phase 9: Gateway.Service (6-8 hours) 🔴 NEXT
+- Ocelot API Gateway
+- Routing to all services
+- Rate limiting
+- Auth middleware
+- CORS configuration
 
-#### Phase 8: Match.Service (10-12 hours) 🔴 NEXT
-- Matchmaking logic
-- ELO rating system
-- Match history
-- Leaderboards
-
-#### Phase 9: Payment.Service (8-10 hours) 🔴
+#### Phase 10: Payment.Service (8-10 hours) 🟡
 - Ocelot API Gateway
 - Routing to all services
 - Rate limiting
