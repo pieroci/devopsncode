@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameSession } from '@/types';
+import type { GameSession } from '@/types';
 import { Button } from '@/components/common';
 import './RoomCard.css';
 

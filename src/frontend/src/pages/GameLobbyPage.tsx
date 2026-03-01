@@ -1,19 +1,163 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/common';
+import { RoomCard, CreateRoomModal } from '@/components/lobby';
+import type { GameSession } from '@/types';
 import './GameLobbyPage.css';
 
 export const GameLobbyPage: React.FC = () => {
   const navigate = useNavigate();
-  const [rooms] = useState<any[]>([]); // Will be populated with real data later
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Mock room data for demonstration
+  const [rooms, setRooms] = useState<(GameSession & { name?: string })[]>([
+    {
+      id: '1',
+      name: 'Epic Race Room',
+      worldId: 'world-1',
+      hostPlayerId: 'host-1',
+      status: 'waiting',
+      maxPlayers: 8,
+      currentPlayers: 3,
+      players: [
+        {
+          playerId: 'host-1',
+          username: 'RacerPro',
+          isReady: true,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 1,
+        },
+        {
+          playerId: 'player-2',
+          username: 'SpeedDemon',
+          isReady: false,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 2,
+        },
+        {
+          playerId: 'player-3',
+          username: 'TurboKid',
+          isReady: true,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 3,
+        },
+      ],
+    },
+    {
+      id: '2',
+      name: 'Beginners Welcome',
+      worldId: 'world-2',
+      hostPlayerId: 'host-2',
+      status: 'waiting',
+      maxPlayers: 4,
+      currentPlayers: 2,
+      players: [
+        {
+          playerId: 'host-2',
+          username: 'NewbieHost',
+          isReady: true,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 1,
+        },
+        {
+          playerId: 'player-4',
+          username: 'LearningToRace',
+          isReady: false,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 2,
+        },
+      ],
+    },
+    {
+      id: '3',
+      name: 'Pro League',
+      worldId: 'world-3',
+      hostPlayerId: 'host-3',
+      status: 'active',
+      maxPlayers: 6,
+      currentPlayers: 6,
+      players: [
+        {
+          playerId: 'host-3',
+          username: 'ProGamer',
+          isReady: true,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 1,
+        },
+      ],
+    },
+  ]);
 
   const handleCreateRoom = () => {
-    // TODO: Open create room modal
-    console.log('Create room clicked');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  const handleCreateRoomSubmit = (data: { name: string; maxPlayers: number }) => {
+    // In a real app, this would call the API
+    console.log('Creating room:', data);
+    
+    // Mock: Add new room to the list
+    const newRoom: GameSession & { name?: string } = {
+      id: `${rooms.length + 1}`,
+      name: data.name,
+      worldId: 'world-1',
+      hostPlayerId: 'current-user',
+      status: 'waiting',
+      maxPlayers: data.maxPlayers,
+      currentPlayers: 1,
+      players: [
+        {
+          playerId: 'current-user',
+          username: 'You',
+          isReady: true,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          speed: 0,
+          lap: 0,
+          position: 1,
+        },
+      ],
+    };
+    
+    setRooms([...rooms, newRoom]);
+  };
+
+  const handleJoinRoom = (roomId: string) => {
+    // In a real app, this would call the API
+    console.log('Joining room:', roomId);
   };
 
   const handleRefresh = () => {
-    // TODO: Refresh room list from API
+    // In a real app, this would fetch rooms from the API
     console.log('Refresh rooms clicked');
   };
 
@@ -81,17 +225,20 @@ export const GameLobbyPage: React.FC = () => {
             </div>
           ) : (
             <div className="rooms-grid">
-              {/* Room cards will be rendered here */}
               {rooms.map((room) => (
-                <div key={room.id} className="room-card">
-                  <h3>{room.name}</h3>
-                  <p>{room.players}/{room.maxPlayers} players</p>
-                </div>
+                <RoomCard key={room.id} room={room} onJoin={handleJoinRoom} />
               ))}
             </div>
           )}
         </section>
       </div>
+
+      {/* Create Room Modal */}
+      <CreateRoomModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseModal}
+        onCreate={handleCreateRoomSubmit}
+      />
     </div>
   );
 };

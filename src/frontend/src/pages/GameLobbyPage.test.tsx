@@ -45,14 +45,16 @@ describe('GameLobbyPage', () => {
   });
 
   describe('Empty State', () => {
-    it('should show empty state when no rooms available', () => {
+    it('should show room cards when rooms are available', () => {
       renderWithRouter(<GameLobbyPage />);
-      expect(screen.getByText(/no game rooms available/i)).toBeInTheDocument();
+      // The page now has mock data by default, so we should see rooms
+      expect(screen.queryByText(/no game rooms available/i)).not.toBeInTheDocument();
     });
 
-    it('should show create room message in empty state', () => {
+    it('should show room count in actions section', () => {
       renderWithRouter(<GameLobbyPage />);
-      expect(screen.getByText(/create a new room to start playing/i)).toBeInTheDocument();
+      // Should show room count (3 mock rooms by default)
+      expect(screen.getByText(/rooms available/i)).toBeInTheDocument();
     });
   });
 
