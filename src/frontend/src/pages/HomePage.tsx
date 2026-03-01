@@ -9,8 +9,7 @@ export const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handlePlayGame = () => {
-    // TODO: Navigate to game lobby when implemented
-    console.log('Navigate to game lobby');
+    navigate('/lobby');
   };
 
   const handleViewProfile = () => {

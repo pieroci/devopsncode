@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { HomePage } from '@/pages/HomePage';
+import { GameLobbyPage } from '@/pages/GameLobbyPage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route Component
@@ -26,6 +27,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <HomePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/lobby',
+    element: (
+      <ProtectedRoute>
+        <GameLobbyPage />
       </ProtectedRoute>
     ),
   },
