@@ -126,7 +126,10 @@ export class GameManager {
    */
   pause(): void {
     if (this.game) {
-      this.game.scene.pause();
+      const activeScenes = this.game.scene.getScenes(true);
+      activeScenes.forEach((scene: any) => {
+        this.game?.scene.pause(scene.scene.key);
+      });
     }
   }
 
@@ -135,7 +138,10 @@ export class GameManager {
    */
   resume(): void {
     if (this.game) {
-      this.game.scene.resume();
+      const activeScenes = this.game.scene.getScenes(true);
+      activeScenes.forEach((scene: any) => {
+        this.game?.scene.resume(scene.scene.key);
+      });
     }
   }
 }

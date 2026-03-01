@@ -3,7 +3,7 @@ import type { GameSession, GamePlayer } from '@/types';
 import { roomsApi, type CreateRoomData } from '@/services/api/roomsApi';
 import { GameHubService } from '@/services/signalR';
 
-interface GameState {
+export interface GameState {
   rooms: GameSession[];
   currentRoom: GameSession | null;
   isLoading: boolean;
