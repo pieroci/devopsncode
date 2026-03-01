@@ -211,28 +211,31 @@
 - [x] Type definitions (57 interfaces)
 - [x] Constants configuration
 - [x] **Unit testing infrastructure (Vitest + React Testing Library)** ✨
-- [x] **170 passing tests with 100% coverage** ✨ UPDATED
+- [x] **186 passing tests with 100% coverage** ✨ UPDATED
 - [x] **Mock system (SignalR, Phaser, Axios)** ✨
 - [x] **Test factories and utilities** ✨
 - [x] **Comprehensive testing documentation** ✨
 - [x] **Authentication UI components (Button, Input)** ✨
 - [x] **LoginPage with validation (11 tests)** ✨
 - [x] **RegisterPage with validation (16 tests)** ✨
-- [x] **HomePage/Dashboard (12 tests)** ✨ NEW
+- [x] **HomePage/Dashboard (12 tests)** ✨
+- [x] **GameLobbyPage (16 tests)** ✨ NEW
 - [x] **React Router with protected routes** ✨
 - [x] **Auth store integration (15 tests)** ✨
 - [x] **Auth API service (15 tests)** ✨
 - [x] **API client with interceptors** ✨
 - [x] **Production build configuration** ✨
-- [x] **UI Screenshots and documentation** ✨ NEW
-- [ ] Game lobby UI
+- [x] **UI Screenshots and documentation** ✨
+- [ ] Room cards and room management UI
+- [ ] Create room modal
+- [ ] Game rooms API service
 - [ ] Phaser.js game scenes
 - [ ] SignalR client integration
 - [ ] Mobile-optimized UI
 - [ ] Touch controls
 - [ ] Game rendering
 
-**Progress: ~40% complete** (was 35%, now includes HomePage/Dashboard with 170 tests)
+**Progress: ~45% complete** (was 40%, now includes GameLobbyPage with 186 tests)
 
 #### Phase 11: Payment.Service (8-10 hours) 🟡
 - Phaser.js 3 game engine
