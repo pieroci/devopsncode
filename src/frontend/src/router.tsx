@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { HomePage } from '@/pages/HomePage';
 import { GameLobbyPage } from '@/pages/GameLobbyPage';
+import { GamePage } from '@/pages/GamePage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route Component
@@ -35,6 +36,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <GameLobbyPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/game/:roomId',
+    element: (
+      <ProtectedRoute>
+        <GamePage />
       </ProtectedRoute>
     ),
   },
