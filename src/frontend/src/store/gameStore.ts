@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { GameSession } from '@/types';
-import { roomsApi, CreateRoomData } from '@/services/api/roomsApi';
+import { roomsApi, type CreateRoomData } from '@/services/api/roomsApi';
 
 interface GameState {
   rooms: GameSession[];

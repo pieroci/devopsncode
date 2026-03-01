@@ -3,6 +3,27 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { GameLobbyPage } from './GameLobbyPage';
 import { BrowserRouter } from 'react-router-dom';
+import type { GameSession } from '@/types';
+
+// Mock game store
+const mockFetchRooms = vi.fn();
+const mockCreateRoom = vi.fn();
+const mockJoinRoom = vi.fn();
+const mockClearError = vi.fn();
+
+const mockRooms: GameSession[] = [];
+
+vi.mock('@/store/gameStore', () => ({
+  useGameStore: vi.fn(() => ({
+    rooms: mockRooms,
+    isLoading: false,
+    error: null,
+    fetchRooms: mockFetchRooms,
+    createRoom: mockCreateRoom,
+    joinRoom: mockJoinRoom,
+    clearError: mockClearError,
+  })),
+}));
 
 // Mock dependencies
 vi.mock('react-router-dom', async () => {
@@ -20,6 +41,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('GameLobbyPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRooms.length = 0; // Clear mock rooms array
   });
 
   describe('Rendering', () => {
@@ -45,16 +67,16 @@ describe('GameLobbyPage', () => {
   });
 
   describe('Empty State', () => {
-    it('should show room cards when rooms are available', () => {
+    it('should show empty state when no rooms available', async () => {
       renderWithRouter(<GameLobbyPage />);
-      // The page now has mock data by default, so we should see rooms
-      expect(screen.queryByText(/no game rooms available/i)).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText(/no game rooms available/i)).toBeInTheDocument();
+      });
     });
 
-    it('should show room count in actions section', () => {
+    it('should call fetchRooms on mount', () => {
       renderWithRouter(<GameLobbyPage />);
-      // Should show room count (3 mock rooms by default)
-      expect(screen.getByText(/rooms available/i)).toBeInTheDocument();
+      expect(mockFetchRooms).toHaveBeenCalled();
     });
   });
 

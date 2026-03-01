@@ -1,118 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/common';
 import { RoomCard, CreateRoomModal } from '@/components/lobby';
-import type { GameSession } from '@/types';
+import { useGameStore } from '@/store/gameStore';
 import './GameLobbyPage.css';
 
 export const GameLobbyPage: React.FC = () => {
   const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
-  // Mock room data for demonstration
-  const [rooms, setRooms] = useState<(GameSession & { name?: string })[]>([
-    {
-      id: '1',
-      name: 'Epic Race Room',
-      worldId: 'world-1',
-      hostPlayerId: 'host-1',
-      status: 'waiting',
-      maxPlayers: 8,
-      currentPlayers: 3,
-      players: [
-        {
-          playerId: 'host-1',
-          username: 'RacerPro',
-          isReady: true,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 1,
-        },
-        {
-          playerId: 'player-2',
-          username: 'SpeedDemon',
-          isReady: false,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 2,
-        },
-        {
-          playerId: 'player-3',
-          username: 'TurboKid',
-          isReady: true,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 3,
-        },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Beginners Welcome',
-      worldId: 'world-2',
-      hostPlayerId: 'host-2',
-      status: 'waiting',
-      maxPlayers: 4,
-      currentPlayers: 2,
-      players: [
-        {
-          playerId: 'host-2',
-          username: 'NewbieHost',
-          isReady: true,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 1,
-        },
-        {
-          playerId: 'player-4',
-          username: 'LearningToRace',
-          isReady: false,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 2,
-        },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Pro League',
-      worldId: 'world-3',
-      hostPlayerId: 'host-3',
-      status: 'active',
-      maxPlayers: 6,
-      currentPlayers: 6,
-      players: [
-        {
-          playerId: 'host-3',
-          username: 'ProGamer',
-          isReady: true,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 1,
-        },
-      ],
-    },
-  ]);
+  // Get state and actions from game store
+  const { rooms, isLoading, error, fetchRooms, createRoom, joinRoom, clearError } = useGameStore();
+
+  // Fetch rooms on component mount
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
 
   const handleCreateRoom = () => {
+    clearError();
     setIsCreateModalOpen(true);
   };
 
@@ -120,45 +26,28 @@ export const GameLobbyPage: React.FC = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleCreateRoomSubmit = (data: { name: string; maxPlayers: number }) => {
-    // In a real app, this would call the API
-    console.log('Creating room:', data);
-    
-    // Mock: Add new room to the list
-    const newRoom: GameSession & { name?: string } = {
-      id: `${rooms.length + 1}`,
-      name: data.name,
-      worldId: 'world-1',
-      hostPlayerId: 'current-user',
-      status: 'waiting',
-      maxPlayers: data.maxPlayers,
-      currentPlayers: 1,
-      players: [
-        {
-          playerId: 'current-user',
-          username: 'You',
-          isReady: true,
-          x: 0,
-          y: 0,
-          rotation: 0,
-          speed: 0,
-          lap: 0,
-          position: 1,
-        },
-      ],
-    };
-    
-    setRooms([...rooms, newRoom]);
+  const handleCreateRoomSubmit = async (data: { name: string; maxPlayers: number }) => {
+    await createRoom(data);
+    if (!useGameStore.getState().error) {
+      setIsCreateModalOpen(false);
+      // Refresh rooms list after creating
+      await fetchRooms();
+    }
   };
 
-  const handleJoinRoom = (roomId: string) => {
-    // In a real app, this would call the API
-    console.log('Joining room:', roomId);
+  const handleJoinRoom = async (roomId: string) => {
+    clearError();
+    await joinRoom(roomId);
+    // If join is successful, navigate to the room (game page)
+    // For now, just refresh the rooms list
+    if (!useGameStore.getState().error) {
+      await fetchRooms();
+    }
   };
 
-  const handleRefresh = () => {
-    // In a real app, this would fetch rooms from the API
-    console.log('Refresh rooms clicked');
+  const handleRefresh = async () => {
+    clearError();
+    await fetchRooms();
   };
 
   const handleBackToDashboard = () => {
@@ -194,22 +83,38 @@ export const GameLobbyPage: React.FC = () => {
               variant="secondary"
               onClick={handleRefresh}
               className="refresh-button"
+              disabled={isLoading}
             >
-              🔄 Refresh
+              {isLoading ? '⏳ Loading...' : '🔄 Refresh'}
             </Button>
             <Button
               variant="primary"
               onClick={handleCreateRoom}
               className="create-button"
+              disabled={isLoading}
             >
               ➕ Create Room
             </Button>
           </div>
         </section>
 
+        {/* Error Message */}
+        {error && (
+          <div className="error-banner">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{error}</span>
+            <button className="error-close" onClick={clearError}>✕</button>
+          </div>
+        )}
+
         {/* Rooms Section */}
         <section className="rooms-section">
-          {rooms.length === 0 ? (
+          {isLoading && rooms.length === 0 ? (
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading rooms...</p>
+            </div>
+          ) : rooms.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">🎮</div>
               <h3>No Game Rooms Available</h3>
