@@ -57,20 +57,21 @@ app.use(express.static('public', {
     dotfiles: 'deny'
 }));
 
-// Serve specific game files explicitly
-app.get('/gta-style-game.html', (req, res) => {
+// Serve specific game files explicitly (with rate limiting applied)
+// Note: Rate limiting middleware is applied to all routes below
+app.get('/gta-style-game.html', rateLimit, (req, res) => {
     res.sendFile(path.join(__dirname, 'gta-style-game.html'));
 });
 
-app.get('/mario-kart-game.html', (req, res) => {
+app.get('/mario-kart-game.html', rateLimit, (req, res) => {
     res.sendFile(path.join(__dirname, 'mario-kart-game.html'));
 });
 
-app.get('/manifest.json', (req, res) => {
+app.get('/manifest.json', rateLimit, (req, res) => {
     res.sendFile(path.join(__dirname, 'manifest.json'));
 });
 
-app.get('/service-worker.js', (req, res) => {
+app.get('/service-worker.js', rateLimit, (req, res) => {
     res.sendFile(path.join(__dirname, 'service-worker.js'));
 });
 
@@ -229,7 +230,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve game files
-app.get('/', (req, res) => {
+app.get('/', rateLimit, (req, res) => {
     res.sendFile(path.join(__dirname, 'gta-style-game.html'));
 });
 
