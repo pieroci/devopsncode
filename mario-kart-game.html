@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Kart Race - Sfida Estrema</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #1a1a1a;
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            animation: colorShift 5s infinite alternate;
+        }
+        
+        @keyframes colorShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        
+        #startScreen h1 {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        #startScreen .subtitle {
+            font-size: 28px;
+            color: #ffeb3b;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        #startScreen .instructions {
+            font-size: 18px;
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        
+        #startScreen button {
+            margin-top: 30px;
+            padding: 20px 50px;
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        #startScreen button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        #gameOverScreen h2 {
+            font-size: 72px;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+        }
+        
+        #gameOverScreen .stats {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #feca57;
+        }
+        
+        #gameOverScreen button {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            background: #48dbfb;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .hud-item {
+            margin: 5px 0;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1000" height="700"></canvas>
+        
+        <div id="hud">
+            <div class="hud-item">Giro: <span id="lapCounter">1/3</span></div>
+            <div class="hud-item">Tempo: <span id="timeCounter">0.0s</span></div>
+            <div class="hud-item">Velocità: <span id="speedCounter">0</span></div>
+            <div class="hud-item">Posizione: <span id="positionCounter">1/4</span></div>
+        </div>
+        
+        <div id="startScreen">
+            <h1>🏎️ SUPER KART RACE 🏎️</h1>
+            <div class="subtitle">⚡ MODALITÀ ESTREMA ⚡</div>
+            <div class="instructions">🎮 Frecce: Accelera/Frena/Sterza</div>
+            <div class="instructions">⚠️ Attenzione: Controlli scivolosi!</div>
+            <div class="instructions">💥 Evita gli ostacoli e i rivali</div>
+            <div class="instructions">🏁 Completa 3 giri per vincere</div>
+            <div class="instructions">🔥 Difficoltà: ESTREMA</div>
+            <button id="startButton">INIZIA LA GARA!</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h2 id="resultTitle">GARA COMPLETATA!</h2>
+            <div class="stats">Tempo finale: <span id="finalTime">0.0s</span></div>
+            <div class="stats">Posizione finale: <span id="finalPosition">1°</span></div>
+            <div class="stats">Collisioni: <span id="collisionCount">0</span></div>
+            <button id="restartButton">RIPROVA</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        
+        // Game state
+        let gameState = 'start'; // start, playing, gameOver
+        let keys = {};
+        let gameTime = 0;
+        let collisions = 0;
+        
+        // Player kart
+        const player = {
+            x: 500,
+            y: 600,
+            width: 40,
+            height: 60,
+            angle: -Math.PI / 2,
+            speed: 0,
+            maxSpeed: 8,
+            acceleration: 0.3,
+            friction: 0.95,
+            turnSpeed: 0.05,
+            lap: 1,
+            checkpoints: [],
+            position: 1
+        };
+        
+        // Opponents
+        const opponents = [];
+        const numOpponents = 3;
+        
+        // Obstacles
+        const obstacles = [];
+        
+        // Track waypoints for AI
+        const trackWaypoints = [];
+        
+        // Race track definition (more challenging)
+        function createTrack() {
+            // Create a challenging figure-8 style track with narrow sections
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Track waypoints for lap counting and AI
+            for (let i = 0; i < 50; i++) {
+                const angle = (i / 50) * Math.PI * 2;
+                const radius = 220 + Math.sin(angle * 3) * 60;
+                trackWaypoints.push({
+                    x: centerX + Math.cos(angle) * radius,
+                    y: centerY + Math.sin(angle) * radius
+                });
+            }
+            
+            // Create static obstacles (oil slicks, barriers)
+            for (let i = 0; i < 15; i++) {
+                const waypointIndex = Math.floor(Math.random() * trackWaypoints.length);
+                const wp = trackWaypoints[waypointIndex];
+                const offsetAngle = Math.random() * Math.PI * 2;
+                const offsetDist = 80 + Math.random() * 40;
+                
+                obstacles.push({
+                    x: wp.x + Math.cos(offsetAngle) * offsetDist,
+                    y: wp.y + Math.sin(offsetAngle) * offsetDist,
+                    type: Math.random() > 0.5 ? 'oil' : 'barrier',
+                    width: 30,
+                    height: 30
+                });
+            }
+            
+            // Initialize opponents
+            for (let i = 0; i < numOpponents; i++) {
+                opponents.push({
+                    x: 500 + (i + 1) * 50,
+                    y: 600,
+                    width: 40,
+                    height: 60,
+                    angle: -Math.PI / 2,
+                    speed: 0,
+                    maxSpeed: 6 + Math.random() * 2,
+                    waypointIndex: 0,
+                    lap: 1,
+                    checkpoints: [],
+                    color: `hsl(${i * 100}, 70%, 50%)`
+                });
+            }
+        }
+        
+        function drawTrack() {
+            // Draw grass background
+            ctx.fillStyle = '#2d5016';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw outer boundary (grass)
+            ctx.fillStyle = '#1a3310';
+            ctx.beginPath();
+            for (let i = 0; i < trackWaypoints.length; i++) {
+                const wp = trackWaypoints[i];
+                const angle = Math.atan2(
+                    trackWaypoints[(i + 1) % trackWaypoints.length].y - wp.y,
+                    trackWaypoints[(i + 1) % trackWaypoints.length].x - wp.x
+                );
+                const offset = 150;
+                const x = wp.x + Math.cos(angle + Math.PI / 2) * offset;
+                const y = wp.y + Math.sin(angle + Math.PI / 2) * offset;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw track (asphalt)
+            ctx.fillStyle = '#404040';
+            ctx.strokeStyle = '#303030';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let i = 0; i < trackWaypoints.length; i++) {
+                const wp = trackWaypoints[i];
+                const angle = Math.atan2(
+                    trackWaypoints[(i + 1) % trackWaypoints.length].y - wp.y,
+                    trackWaypoints[(i + 1) % trackWaypoints.length].x - wp.x
+                );
+                const offset = 100; // Narrow track for difficulty
+                const x = wp.x + Math.cos(angle + Math.PI / 2) * offset;
+                const y = wp.y + Math.sin(angle + Math.PI / 2) * offset;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw center line (dashed)
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 15]);
+            ctx.beginPath();
+            for (let i = 0; i < trackWaypoints.length; i++) {
+                const wp = trackWaypoints[i];
+                if (i === 0) ctx.moveTo(wp.x, wp.y);
+                else ctx.lineTo(wp.x, wp.y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw start/finish line
+            const startWp = trackWaypoints[0];
+            const angle = Math.atan2(
+                trackWaypoints[1].y - startWp.y,
+                trackWaypoints[1].x - startWp.x
+            );
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(
+                startWp.x + Math.cos(angle + Math.PI / 2) * 100,
+                startWp.y + Math.sin(angle + Math.PI / 2) * 100
+            );
+            ctx.lineTo(
+                startWp.x + Math.cos(angle - Math.PI / 2) * 100,
+                startWp.y + Math.sin(angle - Math.PI / 2) * 100
+            );
+            ctx.stroke();
+            
+            // Checkered pattern on finish line
+            ctx.fillStyle = '#000000';
+            for (let i = 0; i < 10; i += 2) {
+                const t = i / 10;
+                const x1 = startWp.x + Math.cos(angle + Math.PI / 2) * (100 - t * 200);
+                const y1 = startWp.y + Math.sin(angle + Math.PI / 2) * (100 - t * 200);
+                const x2 = startWp.x + Math.cos(angle + Math.PI / 2) * (100 - (t + 0.1) * 200);
+                const y2 = startWp.y + Math.sin(angle + Math.PI / 2) * (100 - (t + 0.1) * 200);
+                ctx.fillRect(x1 - 4, y1 - 4, 8, 8);
+            }
+        }
+        
+        function drawObstacles() {
+            obstacles.forEach(obs => {
+                if (obs.type === 'oil') {
+                    // Oil slick
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(obs.x, obs.y, obs.width / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.arc(obs.x - 3, obs.y - 3, obs.width / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Barrier
+                    ctx.fillStyle = '#ff0000';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 3;
+                    ctx.fillRect(obs.x - obs.width / 2, obs.y - obs.height / 2, obs.width, obs.height);
+                    ctx.strokeRect(obs.x - obs.width / 2, obs.y - obs.height / 2, obs.width, obs.height);
+                    
+                    // Warning stripes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(obs.x - obs.width / 2 + 5, obs.y - obs.height / 2 + 5, obs.width - 10, 5);
+                    ctx.fillRect(obs.x - obs.width / 2 + 5, obs.y + obs.height / 2 - 10, obs.width - 10, 5);
+                }
+            });
+        }
+        
+        function drawKart(kart, color = '#ff0000') {
+            ctx.save();
+            ctx.translate(kart.x, kart.y);
+            ctx.rotate(kart.angle + Math.PI / 2);
+            
+            // Kart body
+            ctx.fillStyle = color;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.fillRect(-kart.width / 2, -kart.height / 2, kart.width, kart.height);
+            ctx.strokeRect(-kart.width / 2, -kart.height / 2, kart.width, kart.height);
+            
+            // Windshield
+            ctx.fillStyle = '#87ceeb';
+            ctx.fillRect(-kart.width / 3, -kart.height / 4, kart.width * 2 / 3, kart.height / 3);
+            
+            // Wheels
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(-kart.width / 2 - 5, -kart.height / 2 + 5, 5, 12);
+            ctx.fillRect(kart.width / 2, -kart.height / 2 + 5, 5, 12);
+            ctx.fillRect(-kart.width / 2 - 5, kart.height / 2 - 17, 5, 12);
+            ctx.fillRect(kart.width / 2, kart.height / 2 - 17, 5, 12);
+            
+            ctx.restore();
+            
+            // Position indicator
+            if (kart === player) {
+                ctx.fillStyle = '#ffeb3b';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('YOU', kart.x, kart.y - 40);
+            }
+        }
+        
+        function updatePlayer() {
+            // Challenging controls: slippery and momentum-based
+            if (keys['ArrowUp']) {
+                player.speed += player.acceleration;
+            }
+            if (keys['ArrowDown']) {
+                player.speed -= player.acceleration * 0.7;
+            }
+            
+            // Extra slippery turning for difficulty
+            if (keys['ArrowLeft']) {
+                player.angle -= player.turnSpeed * (1 + Math.abs(player.speed) * 0.1);
+            }
+            if (keys['ArrowRight']) {
+                player.angle += player.turnSpeed * (1 + Math.abs(player.speed) * 0.1);
+            }
+            
+            // Speed limits and friction (more slippery)
+            player.speed *= player.friction;
+            player.speed = Math.max(-player.maxSpeed * 0.5, Math.min(player.speed, player.maxSpeed));
+            
+            // Move player
+            player.x += Math.cos(player.angle) * player.speed;
+            player.y += Math.sin(player.angle) * player.speed;
+            
+            // Check track boundaries (punish going off track)
+            if (!isOnTrack(player)) {
+                player.speed *= 0.8; // Slow down significantly on grass
+                player.x += Math.cos(player.angle + Math.PI) * 2; // Push back
+                player.y += Math.sin(player.angle + Math.PI) * 2;
+            }
+            
+            // Check obstacles
+            obstacles.forEach(obs => {
+                if (checkCollision(player, obs)) {
+                    if (obs.type === 'oil') {
+                        // Oil makes you spin
+                        player.angle += (Math.random() - 0.5) * 0.5;
+                        player.speed *= 0.6;
+                    } else {
+                        // Barrier stops you
+                        player.speed = -player.speed * 0.5;
+                        player.x += Math.cos(player.angle + Math.PI) * 5;
+                        player.y += Math.sin(player.angle + Math.PI) * 5;
+                        collisions++;
+                    }
+                }
+            });
+            
+            // Check opponent collisions
+            opponents.forEach(opp => {
+                if (checkCollision(player, opp)) {
+                    // Bounce off opponents
+                    const bounceAngle = Math.atan2(player.y - opp.y, player.x - opp.x);
+                    player.speed *= 0.4;
+                    player.x += Math.cos(bounceAngle) * 3;
+                    player.y += Math.sin(bounceAngle) * 3;
+                    collisions++;
+                }
+            });
+            
+            // Check lap progress
+            updateLapProgress(player);
+        }
+        
+        function updateOpponents() {
+            opponents.forEach(opp => {
+                // Simple AI: follow waypoints with some aggression
+                const targetWp = trackWaypoints[opp.waypointIndex];
+                const dx = targetWp.x - opp.x;
+                const dy = targetWp.y - opp.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const targetAngle = Math.atan2(dy, dx);
+                
+                // Smooth angle adjustment
+                let angleDiff = targetAngle - opp.angle;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                opp.angle += angleDiff * 0.08;
+                
+                // Accelerate towards max speed
+                if (opp.speed < opp.maxSpeed) {
+                    opp.speed += 0.2;
+                }
+                
+                // Move opponent
+                opp.x += Math.cos(opp.angle) * opp.speed;
+                opp.y += Math.sin(opp.angle) * opp.speed;
+                
+                // Move to next waypoint
+                if (distance < 50) {
+                    opp.waypointIndex = (opp.waypointIndex + 1) % trackWaypoints.length;
+                }
+                
+                // Avoid obstacles (somewhat)
+                obstacles.forEach(obs => {
+                    if (checkCollision(opp, obs)) {
+                        opp.speed *= 0.7;
+                        const avoidAngle = Math.atan2(opp.y - obs.y, opp.x - obs.x);
+                        opp.x += Math.cos(avoidAngle) * 2;
+                        opp.y += Math.sin(avoidAngle) * 2;
+                    }
+                });
+                
+                // Update lap progress
+                updateLapProgress(opp);
+            });
+        }
+        
+        function isOnTrack(kart) {
+            // Check if kart center is within track bounds
+            let minDist = Infinity;
+            trackWaypoints.forEach(wp => {
+                const dist = Math.sqrt((kart.x - wp.x) ** 2 + (kart.y - wp.y) ** 2);
+                minDist = Math.min(minDist, dist);
+            });
+            return minDist < 120;
+        }
+        
+        function checkCollision(obj1, obj2) {
+            const dx = obj1.x - obj2.x;
+            const dy = obj1.y - obj2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDistance = (obj1.width + obj2.width) / 2;
+            return distance < minDistance;
+        }
+        
+        function updateLapProgress(kart) {
+            // Check if crossed finish line
+            const finishWp = trackWaypoints[0];
+            const dist = Math.sqrt((kart.x - finishWp.x) ** 2 + (kart.y - finishWp.y) ** 2);
+            
+            if (dist < 80) {
+                if (!kart.checkpoints.includes(0) && kart.checkpoints.length > 20) {
+                    kart.lap++;
+                    kart.checkpoints = [0];
+                    
+                    if (kart === player && kart.lap > 3) {
+                        endGame();
+                    }
+                }
+            }
+            
+            // Track checkpoint progress (simplified)
+            const currentCheckpoint = Math.floor(kart.waypointIndex || getClosestWaypointIndex(kart));
+            if (!kart.checkpoints.includes(currentCheckpoint)) {
+                kart.checkpoints.push(currentCheckpoint);
+            }
+        }
+        
+        function getClosestWaypointIndex(kart) {
+            let closestIndex = 0;
+            let minDist = Infinity;
+            trackWaypoints.forEach((wp, index) => {
+                const dist = Math.sqrt((kart.x - wp.x) ** 2 + (kart.y - wp.y) ** 2);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestIndex = index;
+                }
+            });
+            return closestIndex;
+        }
+        
+        function updatePositions() {
+            // Calculate race positions based on lap and checkpoint progress
+            const racers = [player, ...opponents];
+            racers.sort((a, b) => {
+                if (a.lap !== b.lap) return b.lap - a.lap;
+                return b.checkpoints.length - a.checkpoints.length;
+            });
+            
+            racers.forEach((racer, index) => {
+                racer.position = index + 1;
+            });
+        }
+        
+        function updateHUD() {
+            document.getElementById('lapCounter').textContent = `${Math.min(player.lap, 3)}/3`;
+            document.getElementById('timeCounter').textContent = `${(gameTime / 60).toFixed(1)}s`;
+            document.getElementById('speedCounter').textContent = Math.abs(Math.round(player.speed * 10));
+            document.getElementById('positionCounter').textContent = `${player.position}/${numOpponents + 1}`;
+        }
+        
+        function gameLoop() {
+            if (gameState !== 'playing') return;
+            
+            gameTime++;
+            
+            // Update
+            updatePlayer();
+            updateOpponents();
+            updatePositions();
+            
+            // Draw
+            drawTrack();
+            drawObstacles();
+            opponents.forEach(opp => drawKart(opp, opp.color));
+            drawKart(player, '#ff0000');
+            
+            // Update HUD
+            updateHUD();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            gameState = 'playing';
+            startScreen.classList.add('hidden');
+            gameOverScreen.style.display = 'none';
+            
+            // Reset game
+            player.x = 500;
+            player.y = 600;
+            player.angle = -Math.PI / 2;
+            player.speed = 0;
+            player.lap = 1;
+            player.checkpoints = [];
+            player.position = 1;
+            gameTime = 0;
+            collisions = 0;
+            
+            // Reset opponents
+            opponents.forEach((opp, i) => {
+                opp.x = 500 + (i + 1) * 50;
+                opp.y = 600;
+                opp.angle = -Math.PI / 2;
+                opp.speed = 0;
+                opp.waypointIndex = 0;
+                opp.lap = 1;
+                opp.checkpoints = [];
+            });
+            
+            gameLoop();
+        }
+        
+        function endGame() {
+            gameState = 'gameOver';
+            
+            const finalTimeText = `${(gameTime / 60).toFixed(1)}s`;
+            const positionText = player.position === 1 ? '🥇 1° POSTO!' : 
+                                 player.position === 2 ? '🥈 2° POSTO' : 
+                                 player.position === 3 ? '🥉 3° POSTO' : 
+                                 `${player.position}° POSTO`;
+            
+            document.getElementById('resultTitle').textContent = 
+                player.position === 1 ? '🏆 HAI VINTO! 🏆' : 'GARA COMPLETATA';
+            document.getElementById('finalTime').textContent = finalTimeText;
+            document.getElementById('finalPosition').textContent = positionText;
+            document.getElementById('collisionCount').textContent = collisions;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        startButton.addEventListener('click', () => {
+            createTrack();
+            startGame();
+        });
+        
+        restartButton.addEventListener('click', () => {
+            startGame();
+        });
+        
+        // Initialize
+        createTrack();
+    </script>
+</body>
+</html>
