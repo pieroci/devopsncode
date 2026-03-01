@@ -12,7 +12,7 @@ public class NotificationDbContext : DbContext
     {
     }
 
-    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationEntity> Notifications => Set<NotificationEntity>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ public class NotificationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Notification configuration
-        modelBuilder.Entity<Notification>(entity =>
+        modelBuilder.Entity<NotificationEntity>(entity =>
         {
             entity.ToTable("notifications");
             entity.HasKey(e => e.Id);

@@ -11,18 +11,18 @@ public interface INotificationService
     /// <summary>
     /// Create a new notification
     /// </summary>
-    Task<ApiResponse<Notification>> CreateNotificationAsync(Guid userId, NotificationType type, 
+    Task<ApiResponse<NotificationEntity>> CreateNotificationAsync(Guid userId, NotificationType type, 
         string title, string message, string? data = null);
 
     /// <summary>
     /// Get user notifications
     /// </summary>
-    Task<ApiResponse<List<Notification>>> GetUserNotificationsAsync(Guid userId, int page = 1, int pageSize = 20);
+    Task<ApiResponse<List<NotificationEntity>>> GetUserNotificationsAsync(Guid userId, int page = 1, int pageSize = 20);
 
     /// <summary>
     /// Mark notification as read
     /// </summary>
-    Task<ApiResponse<Notification>> MarkAsReadAsync(Guid userId, Guid notificationId);
+    Task<ApiResponse<NotificationEntity>> MarkAsReadAsync(Guid userId, Guid notificationId);
 
     /// <summary>
     /// Delete notification

@@ -19,12 +19,12 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
-    public async Task<ApiResponse<Notification>> CreateNotificationAsync(Guid userId, NotificationType type, 
+    public async Task<ApiResponse<NotificationEntity>> CreateNotificationAsync(Guid userId, NotificationType type, 
         string title, string message, string? data = null)
     {
         try
         {
-            var notification = new Notification
+            var notification = new NotificationEntity
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
@@ -43,17 +43,17 @@ public class NotificationService : INotificationService
             _logger.LogInformation("Created notification {NotificationId} for user {UserId}", 
                 notification.Id, userId);
 
-            return ApiResponse<Notification>.SuccessResponse(notification, "Notification created");
+            return ApiResponse<NotificationEntity>.SuccessResponse(notification, "Notification created");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating notification for user {UserId}", userId);
-            return ApiResponse<Notification>.ErrorResponse("Failed to create notification", 
+            return ApiResponse<NotificationEntity>.ErrorResponse("Failed to create notification", 
                 new List<string> { ex.Message });
         }
     }
 
-    public async Task<ApiResponse<List<Notification>>> GetUserNotificationsAsync(Guid userId, int page = 1, int pageSize = 20)
+    public async Task<ApiResponse<List<NotificationEntity>>> GetUserNotificationsAsync(Guid userId, int page = 1, int pageSize = 20)
     {
         try
         {
@@ -64,17 +64,17 @@ public class NotificationService : INotificationService
                 .Take(pageSize)
                 .ToListAsync();
 
-            return ApiResponse<List<Notification>>.SuccessResponse(notifications);
+            return ApiResponse<List<NotificationEntity>>.SuccessResponse(notifications);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting notifications for user {UserId}", userId);
-            return ApiResponse<List<Notification>>.ErrorResponse("Failed to get notifications", 
+            return ApiResponse<List<NotificationEntity>>.ErrorResponse("Failed to get notifications", 
                 new List<string> { ex.Message });
         }
     }
 
-    public async Task<ApiResponse<Notification>> MarkAsReadAsync(Guid userId, Guid notificationId)
+    public async Task<ApiResponse<NotificationEntity>> MarkAsReadAsync(Guid userId, Guid notificationId)
     {
         try
         {
@@ -83,7 +83,7 @@ public class NotificationService : INotificationService
 
             if (notification == null)
             {
-                return ApiResponse<Notification>.ErrorResponse("Notification not found", 
+                return ApiResponse<NotificationEntity>.ErrorResponse("Notification not found", 
                     new List<string> { "Notification does not exist or does not belong to user" });
             }
 
@@ -92,12 +92,12 @@ public class NotificationService : INotificationService
 
             await _context.SaveChangesAsync();
 
-            return ApiResponse<Notification>.SuccessResponse(notification, "Notification marked as read");
+            return ApiResponse<NotificationEntity>.SuccessResponse(notification, "Notification marked as read");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error marking notification as read");
-            return ApiResponse<Notification>.ErrorResponse("Failed to mark as read", 
+            return ApiResponse<NotificationEntity>.ErrorResponse("Failed to mark as read", 
                 new List<string> { ex.Message });
         }
     }

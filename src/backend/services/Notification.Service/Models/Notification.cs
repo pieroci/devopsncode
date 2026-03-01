@@ -3,7 +3,7 @@ namespace GamePlatform.Notification.Service.Models;
 /// <summary>
 /// Notification entity for persistent storage
 /// </summary>
-public class Notification
+public class NotificationEntity
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
