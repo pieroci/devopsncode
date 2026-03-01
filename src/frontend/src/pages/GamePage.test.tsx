@@ -10,6 +10,11 @@ vi.mock('@/game/PhaserGame', () => ({
   PhaserGame: vi.fn(() => <div data-testid="phaser-game">Phaser Game</div>),
 }));
 
+// Mock GameHUD
+vi.mock('@/components/GameHUD', () => ({
+  GameHUD: vi.fn(() => <div data-testid="game-hud">Game HUD</div>),
+}));
+
 // Mock game scenes
 vi.mock('@/game/scenes/BootScene', () => ({
   BootScene: class {},
@@ -80,6 +85,12 @@ describe('GamePage', () => {
       renderWithRouter();
 
       expect(screen.getByTestId('phaser-game')).toBeInTheDocument();
+    });
+
+    it('should render GameHUD component', () => {
+      renderWithRouter();
+
+      expect(screen.getByTestId('game-hud')).toBeInTheDocument();
     });
 
     it('should pass correct scenes to PhaserGame', () => {

@@ -4,6 +4,7 @@ import { PhaserGame } from '@/game/PhaserGame';
 import { BootScene } from '@/game/scenes/BootScene';
 import { MenuScene } from '@/game/scenes/MenuScene';
 import { GameScene } from '@/game/scenes/GameScene';
+import { GameHUD } from '@/components/GameHUD';
 import { useGameStore } from '@/store/gameStore';
 import './GamePage.css';
 
@@ -83,6 +84,7 @@ export const GamePage = () => {
 
   return (
     <div className="game-page" data-testid="game-page">
+      <GameHUD />
       <div className="game-container">
         <PhaserGame 
           scenes={[BootScene, MenuScene, GameScene]}
