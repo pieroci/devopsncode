@@ -30,8 +30,6 @@ export class TouchControlsManager {
   private joystickBase?: Phaser.GameObjects.Graphics;
   private joystickThumb?: Phaser.GameObjects.Graphics;
   private joystickActive: boolean = false;
-  private joystickStartX: number = 0;
-  private joystickStartY: number = 0;
   private joystickCurrentX: number = 0;
   private joystickCurrentY: number = 0;
 
@@ -99,8 +97,6 @@ export class TouchControlsManager {
     // Only activate if touch is near the joystick area
     if (distance < this.joystickRadius * 2) {
       this.joystickActive = true;
-      this.joystickStartX = pointer.x;
-      this.joystickStartY = pointer.y;
       this.joystickCurrentX = pointer.x;
       this.joystickCurrentY = pointer.y;
 
@@ -208,11 +204,6 @@ export class TouchControlsManager {
    * Check if device supports touch
    */
   public static isTouchDevice(): boolean {
-    return (
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
-      // @ts-ignore
-      navigator.msMaxTouchPoints > 0
-    );
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   }
 }
