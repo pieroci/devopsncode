@@ -76,6 +76,8 @@ builder.Services.AddAuthorization();
 // Application Services
 builder.Services.AddScoped<IEventLogger, EventLogger>();
 builder.Services.AddScoped<ISessionManager, SessionManager>();
+builder.Services.AddScoped<IStateManager, StateManager>();
+builder.Services.AddScoped<IGameEngine, SimpleGameEngine>();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
