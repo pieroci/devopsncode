@@ -17,6 +17,15 @@ const mockScene = {
 const mockGraphics = {
   fillStyle: vi.fn().mockReturnThis(),
   fillRect: vi.fn().mockReturnThis(),
+  fillRoundedRect: vi.fn().mockReturnThis(), // Added for new SpriteManager
+  fillCircle: vi.fn().mockReturnThis(), // Added for new SpriteManager
+  lineStyle: vi.fn().mockReturnThis(), // Added for new SpriteManager
+  lineBetween: vi.fn().mockReturnThis(), // Added for new SpriteManager
+  beginPath: vi.fn().mockReturnThis(), // Added for particle textures
+  moveTo: vi.fn().mockReturnThis(), // Added for particle textures
+  lineTo: vi.fn().mockReturnThis(), // Added for particle textures
+  closePath: vi.fn().mockReturnThis(), // Added for particle textures
+  fillPath: vi.fn().mockReturnThis(), // Added for particle textures
   generateTexture: vi.fn(),
   destroy: vi.fn(),
 };
@@ -76,9 +85,9 @@ describe('BootScene', () => {
     it('should create player texture', () => {
       bootScene.preload();
 
-      expect(mockGraphics.fillStyle).toHaveBeenCalledWith(expect.any(Number), 1);
-      expect(mockGraphics.fillRect).toHaveBeenCalledWith(0, 0, 32, 32);
+      expect((bootScene as any).add.graphics).toHaveBeenCalled();
       expect(mockGraphics.generateTexture).toHaveBeenCalledWith('player', 32, 32);
+      expect(mockGraphics.destroy).toHaveBeenCalled();
     });
 
     it('should create remote player texture', () => {

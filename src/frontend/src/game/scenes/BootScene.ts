@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SpriteManager } from '../graphics/SpriteManager';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -17,29 +18,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   private loadAssets(): void {
-    // In a real game, load sprites, sounds, etc.
-    // For now, we'll create simple placeholders
-    
-    // Create a simple player sprite (colored rectangle)
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x4f46e5, 1);
-    graphics.fillRect(0, 0, 32, 32);
-    graphics.generateTexture('player', 32, 32);
-    graphics.destroy();
-
-    // Create remote player sprite (different color)
-    const remoteGraphics = this.add.graphics();
-    remoteGraphics.fillStyle(0x06b6d4, 1);
-    remoteGraphics.fillRect(0, 0, 32, 32);
-    remoteGraphics.generateTexture('remote-player', 32, 32);
-    remoteGraphics.destroy();
-
-    // Create track/ground texture
-    const groundGraphics = this.add.graphics();
-    groundGraphics.fillStyle(0x10b981, 1);
-    groundGraphics.fillRect(0, 0, 64, 64);
-    groundGraphics.generateTexture('ground', 64, 64);
-    groundGraphics.destroy();
+    // Use SpriteManager to create enhanced graphics
+    const spriteManager = new SpriteManager(this);
+    spriteManager.createDefaultSprites();
   }
 
   private createLoadingBar(): void {

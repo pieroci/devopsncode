@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GamePlayer } from '@/types';
 import { GAME_CONFIG } from '../config/gameConfig';
 import { TouchControlsManager } from '../TouchControlsManager';
+import { ParticleEffectsManager } from '../graphics/ParticleEffectsManager';
 
 export interface GameSceneData {
   sendPosition?: (x: number, y: number, rotation: number) => Promise<void>;
@@ -20,6 +21,7 @@ export class GameScene extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private touchControls?: TouchControlsManager;
+  private particleEffects?: ParticleEffectsManager;
   private sceneData?: GameSceneData;
   private lastPositionUpdate: number = 0;
   private playerLabels: Map<string, Phaser.GameObjects.Text> = new Map();
@@ -41,6 +43,9 @@ export class GameScene extends Phaser.Scene {
 
     // Add ground tiles
     this.createGroundTiles();
+
+    // Initialize particle effects
+    this.particleEffects = new ParticleEffectsManager(this);
 
     // Create local player
     this.createLocalPlayer();
@@ -106,6 +111,11 @@ export class GameScene extends Phaser.Scene {
 
     this.localPlayer = this.physics.add.sprite(centerX, centerY, 'player');
     this.localPlayer.setCollideWorldBounds(true);
+    
+    // Add particle trail for local player
+    if (this.particleEffects && this.localPlayer) {
+      this.particleEffects.createMovementTrail('local-player-trail', this.localPlayer, 'spark-particle');
+    }
     
     // Add label
     const label = this.add.text(0, 0, 'You', {
@@ -189,6 +199,16 @@ export class GameScene extends Phaser.Scene {
     if (velocityX !== 0 || velocityY !== 0) {
       const angle = Math.atan2(velocityY, velocityX);
       this.localPlayer.setRotation(angle);
+      
+      // Start particle trail when moving
+      if (this.particleEffects && !this.particleEffects.isTrailActive('local-player-trail')) {
+        this.particleEffects.startTrail('local-player-trail');
+      }
+    } else {
+      // Stop particle trail when stopped
+      if (this.particleEffects && this.particleEffects.isTrailActive('local-player-trail')) {
+        this.particleEffects.stopTrail('local-player-trail');
+      }
     }
   }
 
@@ -309,6 +329,12 @@ export class GameScene extends Phaser.Scene {
     if (this.touchControls) {
       this.touchControls.destroy();
       this.touchControls = undefined;
+    }
+
+    // Clean up particle effects
+    if (this.particleEffects) {
+      this.particleEffects.destroyAll();
+      this.particleEffects = undefined;
     }
 
     // Clear player labels

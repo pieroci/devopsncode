@@ -132,6 +132,14 @@ describe('GameScene', () => {
         setAlpha: vi.fn(),
       }),
       text: vi.fn(() => createMockText()),
+      particles: vi.fn().mockReturnValue({
+        stop: vi.fn(),
+        start: vi.fn(),
+        on: false,
+        manager: {
+          destroy: vi.fn(),
+        },
+      }),
     };
 
     vi.clearAllMocks();
