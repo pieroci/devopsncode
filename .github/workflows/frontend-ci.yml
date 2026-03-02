@@ -39,12 +39,10 @@ jobs:
       - name: Run linter
         working-directory: src/frontend
         run: npm run lint
-        continue-on-error: true
       
       - name: Run type check
         working-directory: src/frontend
         run: npm run type-check
-        continue-on-error: true
       
       - name: Run tests
         working-directory: src/frontend
@@ -106,5 +104,4 @@ jobs:
       
       - name: Run npm audit
         working-directory: src/frontend
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: npm audit --audit-level=critical

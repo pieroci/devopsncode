@@ -54,7 +54,7 @@ services:
     environment:
       - POSTGRES_DB=${DB_NAME:-racingame}
       - POSTGRES_USER=${DB_USER:-gameuser}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
     volumes:
       - db-data:/var/lib/postgresql/data
     restart: unless-stopped
