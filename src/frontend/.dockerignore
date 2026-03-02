@@ -16,11 +16,10 @@ __tests__
 *.spec.tsx
 
 # Development
+.env*
 .env.local
 .env.development
 .env.test
-.env*
-!.env.production
 .vscode
 .idea
 *.swp
