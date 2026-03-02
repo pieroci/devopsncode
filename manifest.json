@@ -1,0 +1,32 @@
+{
+  "name": "Street Chaos - GTA Style Game",
+  "short_name": "Street Chaos",
+  "description": "Un gioco open world in stile GTA con sparatorie, furto di auto e sistema di ricercato",
+  "start_url": "/gta-style-game.html",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#ff0000",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "action"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1200x800",
+      "type": "image/png"
+    }
+  ]
+}

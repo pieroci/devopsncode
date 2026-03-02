@@ -1,0 +1,135 @@
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# .NET
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+nupkg/
+
+# Visual Studio & IDEs
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+# Node.js / Frontend
+node_modules/
+bower_components/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+dist/
+build/
+.cache/
+.next/
+*.tsbuildinfo
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!terraform.tfvars.example
+crash.log
+override.tf
+
+# Kubernetes
+*.kubeconfig
+
+# Secrets & Keys
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
+secrets.yml
+secrets.yaml
+*.secret
+.env
+.env.local
+.env.*.local
+local.settings.json
+appsettings.Development.json
+appsettings.Local.json
+
+# Logs
+logs/
+*.log
+TestResults/
+coverage/
+
+# Docker
+*.dockerfile.tmp
+
+# Redis
+dump.rdb
+
+# Azure
+*.publishsettings
+.azure/
+
+# Helm
+charts/*.tgz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Legacy HTML game files
+leaderboard.json
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test coverage
+coverage/
+.nyc_output/
