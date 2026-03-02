@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SpriteManager } from '../graphics/SpriteManager';
+import { AudioAssetGenerator } from '../audio/AudioAssetGenerator';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -21,6 +22,12 @@ export class BootScene extends Phaser.Scene {
     // Use SpriteManager to create enhanced graphics
     const spriteManager = new SpriteManager(this);
     spriteManager.createDefaultSprites();
+
+    // Generate procedural audio
+    if (AudioAssetGenerator.isSupported(this)) {
+      const audioGenerator = new AudioAssetGenerator(this);
+      audioGenerator.generateDefaultAudio();
+    }
   }
 
   private createLoadingBar(): void {

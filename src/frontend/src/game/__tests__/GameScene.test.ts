@@ -125,6 +125,21 @@ describe('GameScene', () => {
     (gameScene as any).physics = mockPhysics;
     (gameScene as any).input = mockInput;
     (gameScene as any).tweens = mockTweens;
+    (gameScene as any).time = {
+      now: 0,
+    };
+    (gameScene as any).cache = {
+      audio: {
+        exists: vi.fn(() => false),
+      },
+    };
+    (gameScene as any).sound = {
+      add: vi.fn(() => ({
+        play: vi.fn(),
+        stop: vi.fn(),
+        once: vi.fn(),
+      })),
+    };
     (gameScene as any).add = {
       rectangle: vi.fn().mockReturnValue({ setOrigin: vi.fn() }),
       image: vi.fn().mockReturnValue({

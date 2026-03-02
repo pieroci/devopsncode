@@ -38,6 +38,17 @@ describe('MenuScene', () => {
     // Mock scene properties
     (menuScene as any).scene = mockScene;
     (menuScene as any).cameras = mockCameras;
+    (menuScene as any).cache = {
+      audio: {
+        exists: vi.fn(() => false),
+      },
+    };
+    (menuScene as any).sound = {
+      add: vi.fn(() => ({
+        play: vi.fn(),
+        stop: vi.fn(),
+      })),
+    };
     (menuScene as any).add = {
       rectangle: vi.fn().mockReturnValue({ setOrigin: vi.fn() }),
       text: vi.fn((x, y, text) => {

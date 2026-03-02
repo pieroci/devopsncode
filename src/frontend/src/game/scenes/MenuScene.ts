@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
+import { SoundManager } from '../audio/SoundManager';
 
 export class MenuScene extends Phaser.Scene {
   private startButton?: Phaser.GameObjects.Text;
   private titleText?: Phaser.GameObjects.Text;
+  private soundManager?: SoundManager;
 
   constructor() {
     super({ key: 'MenuScene' });
@@ -11,6 +13,14 @@ export class MenuScene extends Phaser.Scene {
   create(): void {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
+
+    // Initialize sound manager
+    this.soundManager = new SoundManager(this);
+    
+    // Play menu music if available
+    if (this.cache.audio.exists('menu-music')) {
+      this.soundManager.playMusic('menu-music', { volume: 0.3, loop: true });
+    }
 
     // Add background
     this.add.rectangle(0, 0, width, height, 0x1f2937).setOrigin(0, 0);
@@ -59,6 +69,10 @@ export class MenuScene extends Phaser.Scene {
 
     // Button click handler
     this.startButton.on('pointerdown', () => {
+      // Play click sound
+      if (this.soundManager && this.cache.audio.exists('button-click')) {
+        this.soundManager.playSound('button-click', { volume: 0.5 });
+      }
       this.startGame();
     });
 

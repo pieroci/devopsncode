@@ -3,6 +3,7 @@ import type { GamePlayer } from '@/types';
 import { GAME_CONFIG } from '../config/gameConfig';
 import { TouchControlsManager } from '../TouchControlsManager';
 import { ParticleEffectsManager } from '../graphics/ParticleEffectsManager';
+import { SoundManager } from '../audio/SoundManager';
 
 export interface GameSceneData {
   sendPosition?: (x: number, y: number, rotation: number) => Promise<void>;
@@ -22,9 +23,11 @@ export class GameScene extends Phaser.Scene {
   };
   private touchControls?: TouchControlsManager;
   private particleEffects?: ParticleEffectsManager;
+  private soundManager?: SoundManager;
   private sceneData?: GameSceneData;
   private lastPositionUpdate: number = 0;
   private playerLabels: Map<string, Phaser.GameObjects.Text> = new Map();
+  private lastMovementSoundTime: number = 0;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -46,6 +49,9 @@ export class GameScene extends Phaser.Scene {
 
     // Initialize particle effects
     this.particleEffects = new ParticleEffectsManager(this);
+
+    // Initialize sound manager
+    this.soundManager = new SoundManager(this);
 
     // Create local player
     this.createLocalPlayer();
@@ -204,6 +210,15 @@ export class GameScene extends Phaser.Scene {
       if (this.particleEffects && !this.particleEffects.isTrailActive('local-player-trail')) {
         this.particleEffects.startTrail('local-player-trail');
       }
+
+      // Play movement sound periodically (every 300ms)
+      const currentTime = this.time.now;
+      if (this.soundManager && 
+          this.cache.audio.exists('movement-sound') && 
+          currentTime - this.lastMovementSoundTime > 300) {
+        this.soundManager.playSound('movement-sound', { volume: 0.2 });
+        this.lastMovementSoundTime = currentTime;
+      }
     } else {
       // Stop particle trail when stopped
       if (this.particleEffects && this.particleEffects.isTrailActive('local-player-trail')) {
@@ -335,6 +350,12 @@ export class GameScene extends Phaser.Scene {
     if (this.particleEffects) {
       this.particleEffects.destroyAll();
       this.particleEffects = undefined;
+    }
+
+    // Clean up sound manager
+    if (this.soundManager) {
+      this.soundManager.destroy();
+      this.soundManager = undefined;
     }
 
     // Clear player labels
